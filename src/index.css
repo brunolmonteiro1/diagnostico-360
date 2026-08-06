@@ -1,0 +1,227 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/* Fontes exigidas pelo CLAUDE.md: títulos em Oswald, corpo em Inter. */
+@import '@fontsource-variable/inter';
+@import '@fontsource/oswald/400.css';
+@import '@fontsource/oswald/500.css';
+@import '@fontsource/oswald/600.css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Diagnóstico 360 — conceito visual "blueprint" (planta técnica).
+ *
+ * Os tokens do CLAUDE.md são a fonte da verdade. As variáveis semânticas do
+ * shadcn abaixo são DERIVADAS deles — não edite as duas metades em separado.
+ * Não introduzir cor fora desta paleta.
+ */
+
+:root {
+  /* --- Tokens do CLAUDE.md (fonte da verdade) --- */
+  --bg-dark: #0f1115;
+  --bg-light: #f4f4f2;
+  --accent-blueprint: #d97706;
+  --critico: #b91c1c;
+  --atencao: #d97706;
+  --saudavel: #15803d;
+  /* Cinza, nunca vermelho: ausência de dado não é erro. */
+  --sem-dado: #64748b;
+
+  /* --- Semântica shadcn derivada dos tokens acima --- */
+  --background: var(--bg-light);
+  --foreground: var(--bg-dark);
+  --card: #ffffff;
+  --card-foreground: var(--bg-dark);
+  --popover: #ffffff;
+  --popover-foreground: var(--bg-dark);
+
+  /* Ação primária = grafite da planta; o âmbar fica para acento e foco. */
+  --primary: var(--bg-dark);
+  --primary-foreground: var(--bg-light);
+  --secondary: #e8e8e5;
+  --secondary-foreground: var(--bg-dark);
+  --muted: #e8e8e5;
+  --muted-foreground: var(--sem-dado);
+
+  /* Acento âmbar do blueprint (decisão registrada em docs/ARQUITETURA.md). */
+  --accent: var(--accent-blueprint);
+  --accent-foreground: var(--bg-dark);
+
+  --destructive: var(--critico);
+  --border: #d8d8d3;
+  --input: #d8d8d3;
+  --ring: var(--accent-blueprint);
+
+  /* Séries de gráfico: semântica de diagnóstico + neutros da planta. */
+  --chart-1: var(--saudavel);
+  --chart-2: var(--atencao);
+  --chart-3: var(--critico);
+  --chart-4: var(--sem-dado);
+  --chart-5: var(--bg-dark);
+
+  /* Cantos quase retos: planta técnica, não card genérico de 8px. */
+  --radius: 0.25rem;
+
+  --sidebar: var(--bg-dark);
+  --sidebar-foreground: var(--bg-light);
+  --sidebar-primary: var(--accent-blueprint);
+  --sidebar-primary-foreground: var(--bg-dark);
+  --sidebar-accent: #1b1e24;
+  --sidebar-accent-foreground: var(--bg-light);
+  --sidebar-border: #262a31;
+  --sidebar-ring: var(--accent-blueprint);
+}
+
+.dark {
+  --background: var(--bg-dark);
+  --foreground: var(--bg-light);
+  --card: #171a1f;
+  --card-foreground: var(--bg-light);
+  --popover: #171a1f;
+  --popover-foreground: var(--bg-light);
+
+  --primary: var(--bg-light);
+  --primary-foreground: var(--bg-dark);
+  --secondary: #1b1e24;
+  --secondary-foreground: var(--bg-light);
+  --muted: #1b1e24;
+  --muted-foreground: #94a3b8;
+
+  --accent: var(--accent-blueprint);
+  --accent-foreground: var(--bg-dark);
+
+  --destructive: #dc2626;
+  --border: #262a31;
+  --input: #262a31;
+  --ring: var(--accent-blueprint);
+}
+
+@theme inline {
+  /* Tokens de marca expostos como utilitários: bg-critico, text-sem-dado, … */
+  --color-bg-dark: var(--bg-dark);
+  --color-bg-light: var(--bg-light);
+  --color-critico: var(--critico);
+  --color-atencao: var(--atencao);
+  --color-saudavel: var(--saudavel);
+  --color-sem-dado: var(--sem-dado);
+
+  /* Semântica shadcn */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Oswald', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Oswald', ui-sans-serif, system-ui, sans-serif;
+
+  /* Escala tipográfica 1.25x (terça maior), base 16px. */
+  --text-xs: 0.64rem;
+  --text-sm: 0.8rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5625rem;
+  --text-2xl: 1.9531rem;
+  --text-3xl: 2.4414rem;
+  --text-4xl: 3.0518rem;
+  --text-5xl: 3.8147rem;
+  --text-6xl: 4.7684rem;
+
+  /* Passo da grade de pontos da planta técnica. */
+  --spacing-grade: 32px;
+
+  /* Alvo mínimo de toque no mobile (Fase 4). */
+  --spacing-toque: 44px;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+  }
+}
+
+@layer components {
+  /* Fundo de planta técnica: grade de pontos a 32px. */
+  .grade-blueprint {
+    background-image: radial-gradient(circle, #00000010 1px, transparent 1px);
+    background-size: var(--spacing-grade) var(--spacing-grade);
+  }
+
+  .dark .grade-blueprint {
+    background-image: radial-gradient(circle, #ffffff12 1px, transparent 1px);
+  }
+
+  /* Numeração da seção: número grande a 5% de opacidade atrás do título. */
+  .numero-secao {
+    @apply font-heading;
+    font-size: var(--text-6xl);
+    line-height: 1;
+    opacity: 0.05;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Card de pergunta ativo: borda esquerda de 3px em âmbar. */
+  .card-pergunta-ativo {
+    border-left: 3px solid var(--accent-blueprint);
+  }
+}
