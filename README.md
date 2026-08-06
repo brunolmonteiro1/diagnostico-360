@@ -35,14 +35,31 @@ npm run dev
 | `npm run preview` | Serve o build |
 | `npm run test` | Testes unitários e de integração (Vitest) |
 | `npm run test:watch` | Vitest em modo watch |
+| `npm run test:db` | Testes de RLS e constraints, em SQL, contra um Postgres descartável |
 | `npm run e2e` | Testes end-to-end (Playwright) |
+| `npm run gen:types` | Regera `src/lib/database.types.ts` a partir do schema |
 | `npm run lint` | Lint (oxlint) |
+
+### Testes de banco
+
+Provam o isolamento entre consultores, que é a garantia central do produto. Precisam
+de um Postgres descartável — o banco é recriado do zero a cada execução:
+
+```bash
+TEST_DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres npm run test:db
+```
+
+Sem `TEST_DATABASE_URL` o script sai com código 2 e explica o que falta.
 
 ## Estado do projeto
 
-Fundação instalada (Fase 0). As seis fases de produto estão descritas em
-[`docs/PLANO.md`](docs/PLANO.md) e ainda não foram implementadas. Nenhum projeto
-Supabase está conectado — ver [`supabase/README.md`](supabase/README.md).
+Fases 0 e 1 concluídas: migrations com RLS, tipos gerados do schema, autenticação de
+consultor e rota protegida `/app`. As fases 2 a 6 estão descritas em
+[`docs/PLANO.md`](docs/PLANO.md).
+
+Nenhum projeto Supabase está conectado — ver
+[`supabase/README.md`](supabase/README.md). As migrations rodam contra qualquer
+Postgres com o shim de `tests/db/00-auth-shim.sql`.
 
 ## Segredos
 

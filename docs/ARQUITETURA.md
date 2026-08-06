@@ -236,6 +236,19 @@ funcionar. Todas são reversíveis e nenhuma toca regra de produto.
 
 ---
 
+## 10b. Decisões da Fase 1
+
+| Decisão | Porquê |
+| --- | --- |
+| Helpers `owns_cliente` / `owns_rodada` / `owns_respondente` em `security definer` | Uma política que consulta outra tabela protegida por RLS fica sujeita à RLS daquela tabela, o que gera recursão e políticas ilegíveis. Cada helper responde só um booleano sobre propriedade, com `search_path` fixo e `execute` revogado de `public`. |
+| Enums de Postgres em vez de `CHECK` para `status`, `vinculo`, `bloco` e `tipo` | Os valores vêm enumerados no `CLAUDE.md` e são estáveis. O gerador de tipos os transforma em união literal no TypeScript, então o valor inválido morre em tempo de compilação. |
+| `respostas` e `respondentes` sem policy de escrita para `authenticated` | Quem escreve é a edge function com service role, depois de validar o token. A ausência de policy é o mecanismo: RLS nega por padrão. O consultor lê para agregar e nunca edita a resposta de ninguém. |
+| Teste de banco em SQL puro, rodado por `psql` | As regras testadas são do Postgres — RLS, GRANT, CHECK. Um cliente Node no meio só acrescentaria dependência e uma camada entre o teste e o que ele afirma. |
+| Trigger `on_auth_user_created` | Sem ele o consultor autentica mas não tem linha em `profiles` para as políticas referenciarem. É plumbing do Supabase Auth, não campo novo. |
+| `supabase` CLI como devDependency | É a ferramenta canônica para `gen types` e para as migrations; o bootstrap do projeto já previa `supabase init`. Os tipos passam a ser gerados do schema em vez de escritos à mão — escritos à mão, eles divergem em silêncio. |
+| Guarda de rota é conveniência, não segurança | `RotaProtegida` existe para a pessoa ver o login em vez de um painel vazio. Quem protege o dado é a RLS. Vale registrar para que ninguém trate a guarda como controle de acesso. |
+| Login com mensagem de erro única | Dizer qual dos dois campos está errado entrega a quem tenta adivinhar a informação de que o e-mail existe. Há teste garantindo que a mensagem do provedor não vaza para a tela. |
+
 ## 11. Pendências de decisão
 
 Não decididas por conta própria, conforme a regra do projeto. Cada uma tem um momento
@@ -254,3 +267,13 @@ natural para ser resolvida.
    definidos; o provedor e o modelo, não.
 5. **Idioma da interface.** Tudo foi escrito em pt-BR (`<html lang="pt-BR">`). Não há
    requisito de i18n; confirmar que nunca haverá antes que isso fique caro.
+6. **Quem edita o banco de perguntas.** `perguntas` é um catálogo global, não
+   pertence a nenhum cliente. Na Fase 1 ficou com leitura para qualquer consultor
+   autenticado e **escrita só para o service role**. A Fase 3 pede uma tela de gestão
+   em `/app/perguntas`, e aí é preciso decidir: um consultor editando o catálogo
+   altera o questionário de todos os outros. Opções: manter a edição fora do app,
+   restringir por `profiles.role`, ou versionar o catálogo por rodada. Nada foi
+   decidido — a policy de escrita simplesmente não existe até lá.
+7. **Cadastro de consultores.** Só há login; não há tela de criação de conta. Definir
+   se o consultor é criado à mão no painel do Supabase, por convite, ou por uma tela
+   de cadastro (que precisaria de aprovação, já que `/app` é acesso restrito).

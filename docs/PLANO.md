@@ -12,7 +12,7 @@ existe, a pendência está registrada em `docs/ARQUITETURA.md` §11 — a regra 
 | Fase | Estado |
 | --- | --- |
 | 0 · Fundação do repositório | **concluída** |
-| 1 · Fundação | não iniciada |
+| 1 · Fundação | **concluída** |
 | 2 · Clientes e rodadas | não iniciada |
 | 3 · Banco de perguntas | não iniciada |
 | 4 · Formulário do respondente | não iniciada |
@@ -40,29 +40,69 @@ estrutura e um README com os passos da CLI.
 
 ---
 
-## Fase 1 — Fundação
+## Fase 1 — Fundação (concluída)
 
-**Escopo.** Migrations completas com RLS para as sete tabelas do `CLAUDE.md`
+**Escopo.** Migrations completas com RLS para as oito tabelas do `CLAUDE.md`
 (`profiles`, `clientes`, `rodadas`, `convites`, `respondentes`, `perguntas`,
 `respostas`, `relatorios`), incluindo a constraint `chk_nao_sei`. Geração dos tipos
 TypeScript a partir do schema. Autenticação de consultor por e-mail/senha. Rota
 protegida `/app` com layout base.
 
+**O que foi entregue.**
+
+- `supabase/migrations/20260806000001_schema.sql` — tabelas, enums, índices,
+  `chk_nao_sei` e o trigger `on_auth_user_created`, que cria o `profile` quando o
+  Auth cria o usuário.
+- `supabase/migrations/20260806000002_rls.sql` — RLS ligada nas oito tabelas,
+  políticas e GRANTs. Helpers `owns_cliente` / `owns_rodada` / `owns_respondente` em
+  `security definer`, para que a checagem de propriedade não recaia na RLS da tabela
+  consultada.
+- `src/lib/database.types.ts` — **gerado** do schema (`npm run gen:types`), não
+  escrito à mão.
+- `src/lib/supabase.ts` e `src/lib/env.ts` — client tipado e validação das variáveis
+  públicas com zod.
+- `src/app/auth/` — `SessaoProvider`, `useSessao`, `RotaProtegida`, `LoginPage`;
+  `AppLayout` e `PainelPage`; rotas em `src/routes.tsx`.
+
 **Pronto quando.** As migrations sobem do zero num banco limpo; os tipos gerados
-compilam; um consultor não autenticado é barrado em `/app`; e o teste de RLS abaixo
-passa.
+compilam; um consultor não autenticado é barrado em `/app`; e o teste de RLS passa.
+**Atingido.**
 
 **Testes que provam.**
 
-- **Isolamento por RLS (obrigatório, bloqueia a fase).** Criar dois consultores em
-  ambiente de teste e provar que um não lê os clientes do outro. Sem esse teste
-  passando, a fase não está pronta.
-- A constraint `chk_nao_sei` rejeita uma linha com `nao_sei = true` e `valor_num`
-  preenchido.
-- Rota protegida redireciona sem sessão e renderiza com sessão.
+- **Isolamento por RLS (bloqueava a fase).** `tests/db/10-rls.sql`, via
+  `npm run test:db`: dois consultores, cada um com a cadeia completa
+  (cliente → rodada → convite → respondente → resposta → relatório), provando que
+  cada um vê só a própria cadeia, nos dois sentidos.
+- Forjar propriedade é barrado pelo `with check`: inserir cliente com `owner_id` de
+  outro, transferir o próprio cliente e criar rodada no cliente alheio.
+- `update`/`delete` no registro do outro atingem zero linhas.
+- Consultor não escreve em `respostas` nem em `perguntas` — quem escreve resposta é
+  a edge function com service role.
+- Sem claims de JWT não se enxerga nada; `anon` não tem grant nenhum.
+- `chk_nao_sei` rejeita `nao_sei = true` com `valor_num`, `valor_texto` ou
+  `valor_opcoes`, e aceita o "não sei" sozinho.
+- `src/routes.test.tsx` e `src/app/auth/LoginPage.test.tsx` — 10 testes: guarda de
+  rota, o estado "carregando" que impede o login de piscar para quem já está
+  autenticado, e a mensagem de erro que não revela se o e-mail existe.
 
-**Cuidado.** O isolamento é do banco, não do frontend. O teste precisa exercitar a
-política com a anon key, do jeito que um cliente qualquer exercitaria.
+**Como rodar o teste de banco.** Ele precisa de um Postgres descartável, porque
+recria o banco a cada execução:
+
+```bash
+TEST_DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres npm run test:db
+```
+
+Sem `TEST_DATABASE_URL` o script sai com código 2 e explica o que falta. O shim em
+`tests/db/00-auth-shim.sql` reproduz o que o Supabase fornece (roles da API, schema
+`auth`, `auth.uid()`) para que as migrations reais rodem contra um Postgres comum —
+se ele divergir do Supabase, o teste passa a mentir; manter enxuto.
+
+**Cuidado que se confirmou.** O isolamento é do banco, não do frontend. A suíte foi
+verificada por sabotagem: desligar a RLS de `clientes`, afrouxar o `with check` do
+insert, conceder insert em `respostas` e remover a `chk_nao_sei` — cada uma quebra o
+teste com a mensagem correta. Um teste de RLS que ninguém tentou quebrar não prova
+isolamento nenhum.
 
 ---
 
