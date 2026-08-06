@@ -1,4 +1,4 @@
-# Diagnóstico 360 — Ethoa Lab
+# Diagnóstico 360 — Ethos Lab
 
 Ferramenta de consultoria organizacional multi-empresa. Coleta a percepção de todos os
 níveis de uma empresa (sócios, gestores, colaboradores, terceirizados) sobre as áreas

@@ -13,7 +13,7 @@ existe, a pendência está registrada em `docs/ARQUITETURA.md` §11 — a regra 
 | --- | --- |
 | 0 · Fundação do repositório | **concluída** |
 | 1 · Fundação | **concluída** |
-| 2 · Clientes e rodadas | não iniciada |
+| 2 · Clientes e rodadas | **concluída** |
 | 3 · Banco de perguntas | não iniciada |
 | 4 · Formulário do respondente | não iniciada |
 | 5 · Motor de cálculo | não iniciada |
@@ -106,7 +106,7 @@ isolamento nenhum.
 
 ---
 
-## Fase 2 — Clientes e rodadas
+## Fase 2 — Clientes e rodadas (concluída)
 
 **Escopo.** CRUD de clientes e de rodadas. Na criação da rodada o consultor escolhe os
 módulos de área ativos (`modulos_ativos`), define `prazo_em` e escreve a
@@ -116,16 +116,40 @@ colagem de e-mails ou CSV, com geração de token e link único por pessoa.
 
 **Pronto quando.** Uma rodada vai de rascunho a encerrada pela UI; a importação gera
 um token único por pessoa; e cada link resolve para um respondente distinto.
+**Atingido.**
+
+**O que foi entregue.**
+
+- `src/domain/rodada-status.ts` — ciclo de vida como função pura. Sem volta de
+  `aberta` para `rascunho` (o link já circulou) nem de `encerrada` para `aberta`
+  (reabrir mudaria o denominador de um diagnóstico já apresentado).
+- `src/domain/importar-convidados.ts` — leitura da colagem: e-mail por linha, CSV com
+  cabeçalho em qualquer ordem, `Nome <email>`, deduplicação e descarte de quem já tem
+  convite. Nada some em silêncio: toda linha fora sai com o motivo.
+- `src/lib/api.ts` — acesso a dados sem filtro por dono; quem filtra é a RLS.
+- Telas `/app/clientes`, `/app/clientes/:id` e `/app/rodadas/:id` com configuração
+  (prazo, anonimato, mensagem de abertura, módulos), transições de estado e
+  importação com prévia antes de gravar.
+
+**Decisão registrada.** Os módulos de área não são lista fixa no código: são as áreas
+que têm pergunta no banco (`perguntas.area_scope` do bloco `area`). Enquanto a Fase 3
+não semear as perguntas, a lista volta vazia — e vazio é a resposta correta, porque
+não faz sentido ativar módulo de área que não tem o que perguntar.
 
 **Testes que provam.**
 
-- Transições de estado válidas são aceitas e inválidas são recusadas.
-- Importação por colagem e por CSV produz N convites com N tokens distintos, e
-  e-mail repetido não gera convite duplicado.
-- Um cliente criado pelo consultor A não aparece na lista do consultor B (regressão
-  do RLS da Fase 1, agora pela UI).
+- Transições válidas aceitas e inválidas recusadas, incluindo os dois caminhos que
+  não podem existir (reabrir e voltar para rascunho).
+- Importação por colagem e por CSV, com repetido reportado e não duplicado; quem já
+  tem convite não ganha link novo ao reimportar a planilha.
+- `ClientesPage`: lista, estado vazio, erro de rede exibido em vez de lista vazia
+  enganosa, criação com `owner_id` explícito (a policy exige `with check`), e
+  validação impedindo cliente sem nome.
+- 40 testes no total.
 
-**Decisão pendente.** Envio de e-mail dos convites — ver `ARQUITETURA.md` §11.3.
+**Não incluído.** Envio de e-mail dos convites — o link é copiado da tela por
+enquanto (pendência em `ARQUITETURA.md` §11.3). O link só abre de verdade depois da
+Fase 4; o token, porém, já é definitivo.
 
 ---
 

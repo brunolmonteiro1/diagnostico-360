@@ -7,7 +7,7 @@ O que você precisa:
 
 - Uma VPS com Linux (Ubuntu 22.04 ou mais novo) e pelo menos 1 GB de RAM;
 - O usuário e a senha (ou chave) para acessar a VPS por SSH;
-- Um domínio ou subdomínio (ex.: `diagnostico.ethoalab.com.br`) — sem ele não há
+- Um domínio ou subdomínio (ex.: `diagnostico.ethoslab.com.br`) — sem ele não há
   HTTPS, e o login trafegaria sem criptografia;
 - Uma conta gratuita no [Supabase](https://supabase.com).
 
@@ -133,7 +133,7 @@ Crie o arquivo de configuração com os valores dos Passos 3 e 4:
 
 ```bash
 cat > .env.deploy <<'FIM'
-APP_DOMAIN=diagnostico.ethoalab.com.br
+APP_DOMAIN=diagnostico.ethoslab.com.br
 VITE_SUPABASE_URL=https://abcdefgh.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...cole-a-chave-anon-aqui
 FIM
@@ -173,7 +173,7 @@ Ainda em **Authentication → URL Configuration**, coloque `https://seu-dominio`
 
 ## Passo 9 — Acessar
 
-Abra `https://diagnostico.ethoalab.com.br` e entre com o usuário do Passo 8.
+Abra `https://diagnostico.ethoslab.com.br` e entre com o usuário do Passo 8.
 
 Você deve cair no **Painel**. Se aparecer a tela de login de novo, a senha está
 errada; se aparecer erro de configuração, revise o `.env.deploy`.

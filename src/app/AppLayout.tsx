@@ -1,7 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useSessao } from './auth/useSessao'
 
-const navegacao = [{ para: '/app', rotulo: 'Painel', fim: true }]
+const navegacao = [
+  { para: '/app', rotulo: 'Painel', fim: true },
+  { para: '/app/clientes', rotulo: 'Clientes', fim: false },
+]
 
 export function AppLayout() {
   const { sessao, sair } = useSessao()
@@ -12,7 +15,7 @@ export function AppLayout() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-6 py-4">
           <div>
             <p className="text-sem-dado text-xs tracking-[0.2em] uppercase">
-              Ethoa Lab
+              Ethos Lab
             </p>
             <p className="font-heading text-lg leading-tight">Diagnóstico 360</p>
           </div>

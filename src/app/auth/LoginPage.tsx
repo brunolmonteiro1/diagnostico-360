@@ -49,7 +49,7 @@ export function LoginPage() {
           </span>
           <div className="bg-accent mb-4 h-[3px] w-10" />
           <p className="text-sem-dado text-sm tracking-[0.2em] uppercase">
-            Ethoa Lab
+            Ethos Lab
           </p>
           <h1 className="mt-1 text-2xl">Diagnóstico 360</h1>
         </div>

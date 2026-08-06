@@ -18,5 +18,11 @@ export default defineConfig({
     css: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}', 'tests/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['e2e/**', 'node_modules/**'],
+    // Valores de fachada só para o módulo de ambiente validar na importação.
+    // Nenhum teste fala com o Supabase: o acesso a dados é mockado.
+    env: {
+      VITE_SUPABASE_URL: 'https://teste.supabase.co',
+      VITE_SUPABASE_ANON_KEY: 'chave-de-teste',
+    },
   },
 })

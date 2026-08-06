@@ -1,6 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './app/AppLayout'
 import { PainelPage } from './app/PainelPage'
+import { ClientesPage } from './app/clientes/ClientesPage'
+import { ClienteDetalhePage } from './app/clientes/ClienteDetalhePage'
+import { RodadaDetalhePage } from './app/rodadas/RodadaDetalhePage'
 import { LoginPage } from './app/auth/LoginPage'
 import { RotaProtegida } from './app/auth/RotaProtegida'
 
@@ -20,6 +23,9 @@ export function AppRoutes() {
       <Route element={<RotaProtegida />}>
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<PainelPage />} />
+          <Route path="clientes" element={<ClientesPage />} />
+          <Route path="clientes/:clienteId" element={<ClienteDetalhePage />} />
+          <Route path="rodadas/:rodadaId" element={<RodadaDetalhePage />} />
         </Route>
       </Route>
 

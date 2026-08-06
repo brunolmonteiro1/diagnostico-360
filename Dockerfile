@@ -1,4 +1,4 @@
-# Diagnóstico 360 — Ethoa Lab
+# Diagnóstico 360 — Ethos Lab
 #
 # Dois estágios: o Node compila, o Caddy serve. A imagem final não tem Node,
 # npm nem node_modules — só os arquivos estáticos e o servidor. Isso deixa a

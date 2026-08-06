@@ -1,4 +1,4 @@
-# Diagnóstico 360 — Ethoa Lab
+# Diagnóstico 360 — Ethos Lab
 # Instalação: veja INSTALL.md. Resumo: docker compose --env-file .env.deploy up -d --build
 services:
   app:
@@ -8,7 +8,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      # Domínio do painel, ex.: diagnostico.ethoalab.com.br
+      # Domínio do painel, ex.: diagnostico.ethoslab.com.br
       # Aponte um registro A dele para o IP da VPS ANTES de subir — é assim que
       # o certificado é emitido. Vazio = HTTP no IP, só para teste.
       - APP_DOMAIN=${APP_DOMAIN:-}

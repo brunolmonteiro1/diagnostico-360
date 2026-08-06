@@ -8,8 +8,9 @@ export function PainelPage() {
       <h1 className="relative text-3xl">Painel</h1>
 
       <p className="text-sem-dado mt-4 max-w-xl">
-        Fundação instalada: banco com RLS, autenticação de consultor e rota
-        protegida. O cadastro de clientes e rodadas entra na Fase 2.
+        Comece por <a href="/app/clientes" className="underline underline-offset-4">Clientes</a>:
+        cada cliente tem suas rodadas, e cada rodada tem seus convidados.
+        O questionário do respondente entra na Fase 4.
       </p>
     </div>
   )
