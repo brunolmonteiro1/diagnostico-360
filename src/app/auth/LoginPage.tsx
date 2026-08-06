@@ -43,17 +43,22 @@ export function LoginPage() {
   return (
     <main className="grade-blueprint flex min-h-screen items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
-        <div className="relative mb-10">
-          <span aria-hidden className="numero-secao absolute -top-12 -left-2">
+        <div className="relative isolate mb-12">
+          <span aria-hidden className="numero-secao absolute -top-2 -left-5 -z-10">
             00
           </span>
-          <p className="text-sem-dado relative text-sm tracking-[0.2em] uppercase">
+          <div className="bg-accent mb-4 h-[3px] w-10" />
+          <p className="text-sem-dado text-sm tracking-[0.2em] uppercase">
             Ethoa Lab
           </p>
-          <h1 className="relative mt-1 text-2xl">Diagnóstico 360</h1>
+          <h1 className="mt-1 text-2xl">Diagnóstico 360</h1>
         </div>
 
-        <form onSubmit={handleSubmit(aoEnviar)} noValidate className="space-y-6">
+        <form
+          onSubmit={handleSubmit(aoEnviar)}
+          noValidate
+          className="border-border card-pergunta-ativo space-y-6 border bg-white p-8"
+        >
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-medium">
               E-mail
@@ -63,7 +68,7 @@ export function LoginPage() {
               type="email"
               autoComplete="email"
               aria-invalid={Boolean(errors.email)}
-              className="border-border focus:border-accent focus:ring-accent/30 h-11 w-full border bg-white px-3 outline-none focus:ring-2"
+              className="border-border focus:border-accent h-11 w-full border bg-white px-3 outline-none focus:ring-accent/25 focus:ring-2"
               {...register('email')}
             />
             {errors.email && (
@@ -82,7 +87,7 @@ export function LoginPage() {
               type="password"
               autoComplete="current-password"
               aria-invalid={Boolean(errors.senha)}
-              className="border-border focus:border-accent focus:ring-accent/30 h-11 w-full border bg-white px-3 outline-none focus:ring-2"
+              className="border-border focus:border-accent h-11 w-full border bg-white px-3 outline-none focus:ring-accent/25 focus:ring-2"
               {...register('senha')}
             />
             {errors.senha && (

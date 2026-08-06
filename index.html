@@ -8,6 +8,10 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Configuração injetada em tempo de execução pelo container (ver
+         docker-entrypoint.sh). Precisa vir ANTES do app. No desenvolvimento
+         local é o placeholder de public/ e os valores vêm do .env.local. -->
+    <script src="/env-config.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -61,6 +61,27 @@ Nenhum projeto Supabase está conectado — ver
 [`supabase/README.md`](supabase/README.md). As migrations rodam contra qualquer
 Postgres com o shim de `tests/db/00-auth-shim.sql`.
 
+## Deploy
+
+Painel na sua VPS via Docker (Caddy servindo os arquivos estáticos, com HTTPS
+automático); banco, login e edge functions no Supabase. Passo a passo completo em
+[`INSTALL.md`](INSTALL.md). Resumo:
+
+```bash
+git clone https://github.com/brunolmonteiro1/diagnostico-360.git
+cd diagnostico-360
+cat > .env.deploy <<'FIM'
+APP_DOMAIN=diagnostico.seudominio.com.br
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+FIM
+docker compose --env-file .env.deploy up -d --build
+```
+
+As chaves são injetadas **em tempo de execução** (`docker-entrypoint.sh` escreve
+`env-config.js` a cada boot), não no build. Trocar de projeto Supabase é editar o
+`.env.deploy` e subir de novo, sem recompilar.
+
 ## Segredos
 
 `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` são públicos e vão ao bundle. Qualquer

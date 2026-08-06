@@ -1,0 +1,28 @@
+# Diagnóstico 360 — Ethoa Lab
+# Instalação: veja INSTALL.md. Resumo: docker compose --env-file .env.deploy up -d --build
+services:
+  app:
+    build: .
+    ports:
+      # 80 e 443 para o Caddy emitir o certificado HTTPS sozinho.
+      - "80:80"
+      - "443:443"
+    environment:
+      # Domínio do painel, ex.: diagnostico.ethoalab.com.br
+      # Aponte um registro A dele para o IP da VPS ANTES de subir — é assim que
+      # o certificado é emitido. Vazio = HTTP no IP, só para teste.
+      - APP_DOMAIN=${APP_DOMAIN:-}
+      # Projeto Supabase (Settings → API). Ambas são públicas por natureza:
+      # vão para o navegador de qualquer visitante. Quem protege o dado é a RLS.
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL:-}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY:-}
+    volumes:
+      # Certificados HTTPS fora do container: sobrevivem a atualizações e
+      # evitam bater no limite de emissões do Let's Encrypt a cada rebuild.
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
