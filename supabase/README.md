@@ -27,3 +27,15 @@ e `VITE_SUPABASE_ANON_KEY`.
 nem em variável com prefixo `VITE_` — só em `supabase secrets set`. Toda leitura e
 gravação do respondente passa por edge function com service role que valida o token;
 as tabelas de resposta nunca são expostas ao client sem autenticação.
+
+## Secrets da Fase 6 — `gerar-relatorio`
+
+```bash
+supabase secrets set OPENROUTER_API_KEY=sk-or-...
+# Opcional — sem isto, usa o padrão em supabase/functions/_shared/openrouter.ts
+# (MODELO_RELATORIO_PADRAO, hoje "anthropic/claude-sonnet-4.5").
+supabase secrets set OPENROUTER_REPORT_MODEL=anthropic/claude-sonnet-4.5
+```
+
+`SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` já são injetadas automaticamente pelo
+runtime de edge functions — não precisam de `secrets set`.

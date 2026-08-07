@@ -4,6 +4,8 @@ import { PainelPage } from './app/PainelPage'
 import { ClientesPage } from './app/clientes/ClientesPage'
 import { ClienteDetalhePage } from './app/clientes/ClienteDetalhePage'
 import { RodadaDetalhePage } from './app/rodadas/RodadaDetalhePage'
+import { RelatorioPage } from './app/rodadas/RelatorioPage'
+import { RelatorioPrintPage } from './app/relatorio/RelatorioPrintPage'
 import { PerguntasPage } from './app/perguntas/PerguntasPage'
 import { LoginPage } from './app/auth/LoginPage'
 import { RotaProtegida } from './app/auth/RotaProtegida'
@@ -31,8 +33,13 @@ export function AppRoutes() {
           <Route path="clientes" element={<ClientesPage />} />
           <Route path="clientes/:clienteId" element={<ClienteDetalhePage />} />
           <Route path="rodadas/:rodadaId" element={<RodadaDetalhePage />} />
+          <Route path="rodadas/:rodadaId/relatorio" element={<RelatorioPage />} />
           <Route path="perguntas" element={<PerguntasPage />} />
         </Route>
+
+        {/* Fora do AppLayout de propósito: a rota de impressão não pode ter
+            sidebar nem chrome do app na hora de exportar/imprimir. */}
+        <Route path="/relatorio/:relatorioId/print" element={<RelatorioPrintPage />} />
       </Route>
 
       <Route

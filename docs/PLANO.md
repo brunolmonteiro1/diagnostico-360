@@ -17,7 +17,7 @@ existe, a pendência está registrada em `docs/ARQUITETURA.md` §11 — a regra 
 | 3 · Banco de perguntas | **concluída** |
 | 4 · Formulário do respondente | quase — falta o e2e |
 | 5 · Motor de cálculo | **concluída** |
-| 6 · Relatório | não iniciada |
+| 6 · Relatório | quase — falta o deploy real e a verificação contra um modelo de verdade |
 
 ---
 
@@ -386,7 +386,50 @@ entregar saída de IA direto ao cliente.**
 - A narrativa editada pelo consultor persiste em `narrativa_editada` e é a que vai
   para a impressão.
 
-**Decisão pendente.** Provedor e modelo de IA — ver `ARQUITETURA.md` §11.4.
+**Decisão que estava pendente, resolvida nesta sessão.** Provedor: OpenRouter, modelo
+padrão `anthropic/claude-sonnet-4.5` — ver `ARQUITETURA.md` §12.
+
+**O que foi entregue.**
+
+- `src/domain/relatorio.ts` — `montarPayloadRelatorio`, puro, TDD estrito (9 testes
+  escritos antes da implementação, verificados por sabotagem). Agrega por dimensão
+  (geral/liderança/equipe), gap hierárquico por dimensão, heatmap área × dimensão e
+  eNPS — reaproveitando `calcularRecorte`/`calcularGapHierarquico`/`calcularEnps` de
+  `scoring.ts`, sem duplicar regra.
+- `src/domain/relatorio-prompt.ts` — `SYSTEM_PROMPT_RELATORIO`, `construirMensagemUsuario`
+  e `validarNarrativa` (validação à mão, sem zod, para ser importável tanto do
+  frontend quanto da edge function em Deno — ver `ARQUITETURA.md` §12). 8 testes,
+  incluindo a prova de que a mensagem enviada ao modelo nunca contém id, nome ou
+  e-mail de respondente.
+- `supabase/functions/_shared/openrouter.ts` e `supabase/functions/gerar-relatorio/index.ts`
+  — orquestra: lê com um client escopado no JWT do consultor (RLS decide o que ele vê,
+  igual ao resto do app), monta o payload, chama o modelo a temperatura 0.3 com
+  `response_format: json_object`, valida a saída e só então usa service role para
+  gravar a nova versão em `relatorios` (única tabela sem policy de insert para
+  `authenticated`, de propósito).
+- `src/app/rodadas/RelatorioPage.tsx` (`/app/rodadas/:rodadaId/relatorio`) — radar de
+  6 dimensões em 3 séries, barras do Índice de Visibilidade, barras divergentes do
+  gap hierárquico, mapa de calor área × dimensão, narrativa em blocos editáveis com
+  "Salvar edições" gravando em `narrativa_editada`.
+- `src/app/relatorio/RelatorioPrintPage.tsx` (`/relatorio/:id/print`) — só leitura,
+  fora do `AppLayout`, `@media print` em `src/index.css`, usa `narrativa_editada`
+  quando existir.
+- Link "Ver relatório →" em `RodadaDetalhePage.tsx`, ao lado do cabeçalho de
+  Acompanhamento.
+
+**Não incluído / falta.**
+
+- **Deploy e verificação contra IA real.** Nada nesta sessão chamou a OpenRouter de
+  verdade — sem projeto Supabase live nem chave da OpenRouter disponíveis aqui. Os 17
+  testes de domínio (determinísticos) passam; a integração de rede, não foi exercida.
+- Verificação visual em navegador dos gráficos (radar/heatmap/barras) — não foi
+  possível abrir um navegador contra dados reais nesta sessão. Antes de considerar a
+  fase encerrada, abrir `/app/rodadas/:id/relatorio` de verdade e conferir
+  visualmente, especialmente o radar com dimensão suprimida (deve aparecer sem linha
+  naquele eixo, nunca em zero).
+- E-mail/PDF de exportação de fato (a rota de impressão depende do "Salvar como PDF"
+  do navegador, como o `PLANO.md` já previa com `@media print` — não há geração de
+  PDF no servidor).
 
 ---
 
@@ -394,16 +437,16 @@ entregar saída de IA direto ao cliente.**
 
 Vale para o conjunto, não para uma fase isolada.
 
-- [ ] `npm run test` e `npm run build` limpos
-- [ ] Marcar "Não sei" grava `nao_sei = true` e não altera a maturidade — teste no domain
-- [ ] Dimensão com visibilidade < 40% não exibe nota em tela nem no PDF
-- [ ] Recorte com `n < 3` nunca aparece
-- [ ] E2E de retomada passando
-- [ ] Bloco de liderança não aparece para colaborador
-- [ ] Formulário completo no celular, sem rolagem horizontal
-- [ ] Token inválido mostra tela amigável, não 500
-- [ ] `grep -r "service_role\|sk-\|anthropic" src/` não retorna nada
-- [ ] Consultor A não lê clientes do consultor B — teste automatizado
-- [ ] Relatório escreve "dado insuficiente" em rodada de teste com 2 respondentes
-- [ ] Nenhum nome próprio das abertas aparece na narrativa
-- [ ] Sem azul genérico em CTA, sem gradiente roxo-azul
+- [x] `npm run test` e `npm run build` limpos — 144 testes, build limpo (verificado nesta sessão)
+- [x] Marcar "Não sei" grava `nao_sei = true` e não altera a maturidade — teste no domain (Fase 5)
+- [x] Dimensão com visibilidade < 40% não exibe nota em tela nem no PDF (Fase 6: domain + `RadarDimensoes`/`BarrasVisibilidade`/heatmap/print, todos checam `confiavel` antes de mostrar número)
+- [x] Recorte com `n < 3` nunca aparece (Fase 5 no cockpit; Fase 6 no relatório — mesma regra, `calcularRecorte`)
+- [ ] E2E de retomada passando — ainda pendente da Fase 4, não tocado nesta sessão
+- [x] Bloco de liderança não aparece para colaborador (Fase 4)
+- [ ] Formulário completo no celular, sem rolagem horizontal — não verificado em navegador nesta sessão
+- [x] Token inválido mostra tela amigável, não 500 (Fase 4)
+- [x] `grep -r "service_role\|sk-\|anthropic" src/` não retorna nada — verificado nesta sessão
+- [x] Consultor A não lê clientes do consultor B — teste automatizado (Fase 1)
+- [x] Relatório escreve "dado insuficiente" em rodada de teste com 2 respondentes — `relatorio.test.ts`
+- [x] Nenhum nome próprio das abertas aparece na narrativa — verdade por construção: nenhuma resposta aberta (`texto_curto`/`texto_longo`) entra no payload da IA (ver `ARQUITETURA.md` §12); não é revisão manual, é o payload não ter onde carregar o dado
+- [ ] Sem azul genérico em CTA, sem gradiente roxo-azul — só tokens existentes usados na Fase 6, mas não verificado visualmente em navegador nesta sessão

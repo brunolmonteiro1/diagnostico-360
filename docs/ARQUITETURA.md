@@ -263,8 +263,12 @@ natural para ser resolvida.
 3. **Provedor de e-mail dos convites.** A Fase 2 gera token e link único por pessoa,
    e `convites` tem `enviado_em` e `lembretes_enviados`. Não está definido se o
    sistema dispara e-mail ou se o consultor leva o link para fora.
-4. **Modelo de IA da Fase 6.** O prompt de sistema e a temperatura (0.3) estão
-   definidos; o provedor e o modelo, não.
+4. ~~**Modelo de IA da Fase 6.**~~ **Resolvida na Fase 6.** Provedor: OpenRouter
+   (`supabase/functions/_shared/openrouter.ts`), o mesmo gateway já usado no projeto
+   irmão Casa da Rocha — uma chave, muitos modelos, sem acoplar o código a um único
+   fornecedor. Modelo padrão: `anthropic/claude-sonnet-4.5`, trocável sem deploy de
+   código via secret `OPENROUTER_REPORT_MODEL`. Ver §12 para as demais decisões desta
+   fase.
 5. **Idioma da interface.** Tudo foi escrito em pt-BR (`<html lang="pt-BR">`). Não há
    requisito de i18n; confirmar que nunca haverá antes que isso fique caro.
 6. **Quem edita o banco de perguntas.** `perguntas` é um catálogo global, não
@@ -277,3 +281,31 @@ natural para ser resolvida.
 7. **Cadastro de consultores.** Só há login; não há tela de criação de conta. Definir
    se o consultor é criado à mão no painel do Supabase, por convite, ou por uma tela
    de cadastro (que precisaria de aprovação, já que `/app` é acesso restrito).
+
+---
+
+## 12. Decisões da Fase 6
+
+| Decisão | Porquê |
+| --- | --- |
+| Provedor de IA: OpenRouter, modelo padrão `anthropic/claude-sonnet-4.5` | Pedido explícito do usuário nesta sessão ("open router. mas vc vai construir tudo em volta"). Mesmo padrão do projeto irmão Casa da Rocha (`lib/coding/openrouter.ts` lá, `supabase/functions/_shared/openrouter.ts` aqui) — uma chave, catálogo de modelos, sem *vendor lock-in* de código. |
+| Texto do `SYSTEM_PROMPT_RELATORIO` reconstruído nesta sessão | O texto original do "prompt da fase" citado no `PLANO.md` não está versionado neste repositório — só existiu na conversa de kickoff do produto. O texto em `src/domain/relatorio-prompt.ts` foi escrito a partir de toda regra já documentada (não-sei ≠ nota baixa, "dado insuficiente" sob baixa cobertura, nunca nome próprio, schema de saída do `PLANO.md`). Se o texto literal original aparecer, ele deve substituir este. |
+| Validação da saída da IA sem zod, à mão (`validarNarrativa`) | `src/domain/relatorio-prompt.ts` é importado tanto pelo frontend (Vite/Node) quanto pela edge function `gerar-relatorio` (Deno). Um especificador nu (`import { z } from 'zod'`) não resolve no Deno sem mapa de import; escrever o type-guard à mão evita essa fragilidade nos dois lados sem introduzir dependência nova (regra do `CLAUDE.md`: não instalar dependência sem perguntar). |
+| Payload da IA contém **só** os itens objetivos pontuáveis (`peso > 0`, `dimensao` preenchida) — nenhuma resposta aberta (`texto_curto`/`texto_longo`) chega ao modelo | Leitura mais estrita possível de "nunca envie resposta individual identificada, só agregados": em vez de tentar anonimizar ou resumir texto livre (risco real de nome próprio vazar, ex. "eu, João, acho que..."), a resposta aberta simplesmente não entra no pipeline de IA. Isso também torna o critério de pronto "nenhum nome próprio das abertas aparece na narrativa" verdade por construção, não por revisão manual. Uma etapa futura e explicitamente consentida poderia agregar temas de texto livre; não foi implementada aqui. |
+| `FIM.01` (grau de confiança) também fica fora do payload da Fase 6 | Pendência já registrada na Fase 4 do `PLANO.md`: a pergunta é `alta\|media\|baixa` e a coluna `respondentes.autoavaliacao_confianca` é numérica — mapear uma na outra seria inventar. `FIM.01`/`FIM.02`/`FIM.03` são bloco `encerramento` com `dimensao = null`, e o payload já filtra por `dimensao is not null`, então ficam de fora sem necessidade de exceção especial no código. |
+| `n` de um recorte (dimensão × segmento) é "quantos respondentes têm a dimensão aplicável", não o total de concluídos | Colaborador nunca vê o bloco de liderança — contar todos os colaboradores no denominador da dimensão "liderança" produziria visibilidade baixa artificial (parece pouco dado) em vez do que realmente é: a dimensão não se aplica a esse segmento. `recortePorDimensao` em `src/domain/relatorio.ts` filtra por "tem item dessa dimensão na própria lista" antes de contar `n`. |
+| Gap hierárquico de uma dimensão só é calculado quando os dois lados (`lideranca`, `equipe`) já não estão suprimidos | Reaproveita a supressão por `n < 3` já calculada para os recortes de exibição, em vez de reimplementar a checagem — um lado suprimido por sigilo não pode ser "salvo" pelo outro lado no gap. |
+| Radar usa `null`, nunca `0`, para dimensão sem confiabilidade | Zero no eixo afirmaria visualmente "maturidade baixa", que é exatamente o oposto do princípio central do produto para dado ausente. A tabela de Índice de Visibilidade ao lado do radar é a fonte de verdade; o radar é resumo visual, nunca o único lugar onde a supressão aparece. |
+| Limiares de cor do mapa de calor: `< 40` crítico, `40–69` atenção, `≥ 70` saudável (`src/components/relatorio/faixa.ts`) | Decisão de exibição, não de cálculo — o `PLANO.md` pede o mapa de calor com `--sem-dado` na supressão mas não fixa os limiares da escala de cor. Split simétrico documentado aqui para ser revisável, não escondido num número mágico. |
+| Rota `/relatorio/:id/print` continua protegida (`RotaProtegida`), fora do `AppLayout` | O `PLANO.md` não pede um link público para o cliente final ver o relatório sem login — ao contrário, "nunca entregar saída de IA direto ao cliente" é critério de pronto. Ficar fora do `AppLayout` (sem sidebar) é só para a impressão sair limpa, não abre a rota. |
+| Leitura da `gerar-relatorio` usa um client escopado no JWT do consultor (RLS), não service role | Mesma filosofia do resto do sistema (§3): a posse da rodada é responsabilidade da RLS, não de uma checagem duplicada na function. Só o `insert` final em `relatorios` usa service role, porque de propósito não existe policy de insert para `authenticated` naquela tabela. |
+
+## 13. Pendência aberta desta fase
+
+Provedor e modelo agora estão decididos (ver §12), mas falta o **deploy real**: a
+function `gerar-relatorio` nunca rodou contra uma chave OpenRouter de verdade nesta
+sessão (sem acesso a um projeto Supabase live nem a uma chave da OpenRouter aqui). Os
+testes cobrem tudo que é determinístico — `src/domain/relatorio.ts` e
+`src/domain/relatorio-prompt.ts`, 17 testes — mas a chamada de rede e o formato real
+de resposta do modelo escolhido só se confirmam publicando a function e gerando um
+relatório de verdade contra uma rodada com pelo menos 3 respondentes por recorte.

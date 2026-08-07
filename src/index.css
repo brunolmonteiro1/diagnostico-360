@@ -228,3 +228,16 @@
     border-left: 3px solid var(--accent-blueprint);
   }
 }
+
+/* Rota de impressão do relatório (Fase 6): fundo branco e margem de página.
+   `break-inside-avoid` (usado nas seções do relatório) já é utilitário padrão
+   do Tailwind — não precisa de regra própria aqui. */
+@media print {
+  @page {
+    margin: 16mm;
+  }
+
+  body {
+    background: white;
+  }
+}

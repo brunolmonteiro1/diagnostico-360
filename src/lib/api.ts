@@ -253,3 +253,73 @@ export async function listarRespondentes(rodadaId: string): Promise<Respondente[
   if (error) erro('Não foi possível carregar os respondentes', error)
   return data
 }
+
+// --------------------------------------------------------------------------
+// Relatório (Fase 6)
+// --------------------------------------------------------------------------
+
+export type Relatorio = Tabelas['relatorios']['Row']
+
+/** O mais recente por `versao` — nunca apaga os anteriores, é histórico. */
+export async function obterUltimoRelatorio(rodadaId: string): Promise<Relatorio | null> {
+  const { data, error } = await supabase
+    .from('relatorios')
+    .select('*')
+    .eq('rodada_id', rodadaId)
+    .order('versao', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) erro('Não foi possível carregar o relatório', error)
+  return data
+}
+
+export async function obterRelatorio(id: string): Promise<Relatorio> {
+  const { data, error } = await supabase.from('relatorios').select('*').eq('id', id).single()
+
+  if (error) erro('Não foi possível carregar o relatório', error)
+  return data
+}
+
+export type FalhaGeracaoRelatorio =
+  | 'nao_autenticado'
+  | 'requisicao_invalida'
+  | 'rodada_nao_encontrada'
+  | 'resposta_ia_invalida'
+  | 'erro_interno'
+
+/**
+ * Chama a edge function que monta o payload agregado, gera a narrativa via IA
+ * e grava uma nova versão. `supabase.functions.invoke` já encaminha o JWT da
+ * sessão atual no cabeçalho Authorization — é assim que a function sabe quem
+ * está pedindo e valida a posse da rodada pela RLS, sem lógica duplicada aqui.
+ */
+export async function gerarRelatorio(
+  rodadaId: string
+): Promise<{ ok: true; relatorio: Relatorio } | { ok: false; motivo: FalhaGeracaoRelatorio }> {
+  const { data, error } = await supabase.functions.invoke('gerar-relatorio', {
+    body: { rodada_id: rodadaId },
+  })
+
+  if (error) return { ok: false, motivo: 'erro_interno' }
+  return data
+}
+
+/**
+ * A narrativa editada pelo consultor é o que vai para a impressão — nunca a
+ * saída bruta da IA sem revisão (critério de pronto da Fase 6).
+ */
+export async function salvarNarrativaEditada(
+  relatorioId: string,
+  narrativaEditada: Relatorio['narrativa']
+): Promise<Relatorio> {
+  const { data, error } = await supabase
+    .from('relatorios')
+    .update({ narrativa_editada: narrativaEditada, editado_manualmente: true })
+    .eq('id', relatorioId)
+    .select()
+    .single()
+
+  if (error) erro('Não foi possível salvar as edições do relatório', error)
+  return data
+}
