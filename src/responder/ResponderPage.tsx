@@ -201,7 +201,9 @@ export function ResponderPage() {
           })
 
       setSalvando((n) => n - 1)
-      setFalhaAoSalvar(!resultado.ok)
+      // `resultado?.ok`: qualquer resposta inesperada conta como falha, em vez
+      // de derrubar a tela no meio do preenchimento de alguém.
+      setFalhaAoSalvar(!resultado?.ok)
     },
     [token]
   )
@@ -246,7 +248,11 @@ export function ResponderPage() {
 
   function irPara(novo: number) {
     setIndice(novo)
-    topo.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // Nem todo ambiente implementa scrollIntoView (jsdom, por exemplo). Rolar é
+    // conveniência: não pode ser motivo de erro em cima de quem está respondendo.
+    if (typeof topo.current?.scrollIntoView === 'function') {
+      topo.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 
   return (

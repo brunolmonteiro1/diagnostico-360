@@ -16,7 +16,7 @@ vi.mock('./api', async () => {
   }
 })
 
-const { iniciar, salvarResposta } = await import('./api')
+const { iniciar, salvarResposta, salvarPerfil, concluir } = await import('./api')
 const { ResponderPage } = await import('./ResponderPage')
 
 const pergunta = (over: Partial<PerguntaServidor>): PerguntaServidor => ({
@@ -80,7 +80,11 @@ function montar(token = 'abc123') {
 describe('ResponderPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Todos os mocks precisam resolver: um vi.fn() sem retorno devolve
+    // undefined, e foi assim que um `resultado.ok` passou despercebido.
     vi.mocked(salvarResposta).mockResolvedValue({ ok: true })
+    vi.mocked(salvarPerfil).mockResolvedValue({ ok: true })
+    vi.mocked(concluir).mockResolvedValue({ ok: true, jaConcluido: false })
   })
 
   it('usa o texto de abertura obrigatório, literalmente', async () => {
