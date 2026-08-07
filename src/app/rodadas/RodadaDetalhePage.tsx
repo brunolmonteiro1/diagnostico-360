@@ -9,8 +9,11 @@ import {
   excluirConvite,
   listarConvites,
   listarModulosDeArea,
+  listarRespondentes,
   obterRodada,
 } from '@/lib/api'
+import { Cobertura } from '@/components/shared/Cobertura'
+import { calcularCobertura } from '@/domain/cobertura'
 import {
   impedimentosParaAbrir,
   podeTransicionar,
@@ -42,6 +45,10 @@ export function RodadaDetalhePage() {
     [rodadaId]
   )
   const modulos = useConsulta(listarModulosDeArea)
+  const respondentes = useConsulta(
+    useCallback(() => listarRespondentes(rodadaId), [rodadaId]),
+    [rodadaId]
+  )
 
   const emailsExistentes = useMemo(
     () => (convites.dados ?? []).map((c) => c.email ?? '').filter(Boolean),
@@ -57,6 +64,19 @@ export function RodadaDetalhePage() {
 
   const dados = rodada.dados
   const editavel = dados?.status === 'rascunho'
+
+  const cobertura = useMemo(
+    () =>
+      calcularCobertura(
+        convites.dados?.length ?? 0,
+        (respondentes.dados ?? []).map((r) => ({
+          areaPrincipal: r.area_principal,
+          vinculo: r.vinculo,
+          concluido: r.status === 'concluido',
+        }))
+      ),
+    [convites.dados, respondentes.dados]
+  )
 
   async function mudarStatus(para: Parameters<typeof rotuloAcao>[0]) {
     if (!dados || !podeTransicionar(dados.status, para)) return
@@ -162,6 +182,18 @@ export function RodadaDetalhePage() {
                 </li>
               ))}
             </ul>
+          )}
+
+          {/* ---------------------------------------------------------- */}
+          {dados.status !== 'rascunho' && (
+            <>
+              <h2 className="font-heading mb-4 text-xl">Acompanhamento</h2>
+              <div className="mb-12">
+                <Estado carregando={respondentes.carregando} erro={respondentes.erro}>
+                  <Cobertura dados={cobertura} />
+                </Estado>
+              </div>
+            </>
           )}
 
           {/* ---------------------------------------------------------- */}

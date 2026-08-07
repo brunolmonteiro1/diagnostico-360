@@ -237,3 +237,19 @@ export async function listarPerguntas(): Promise<Pergunta[]> {
   if (error) erro('Não foi possível carregar as perguntas', error)
   return data
 }
+
+// --------------------------------------------------------------------------
+// Respondentes (acompanhamento)
+// --------------------------------------------------------------------------
+
+export type Respondente = Tabelas['respondentes']['Row']
+
+export async function listarRespondentes(rodadaId: string): Promise<Respondente[]> {
+  const { data, error } = await supabase
+    .from('respondentes')
+    .select('*')
+    .eq('rodada_id', rodadaId)
+
+  if (error) erro('Não foi possível carregar os respondentes', error)
+  return data
+}

@@ -16,7 +16,7 @@ existe, a pendência está registrada em `docs/ARQUITETURA.md` §11 — a regra 
 | 2 · Clientes e rodadas | **concluída** |
 | 3 · Banco de perguntas | **concluída** |
 | 4 · Formulário do respondente | não iniciada |
-| 5 · Motor de cálculo | não iniciada |
+| 5 · Motor de cálculo | **concluída** |
 | 6 · Relatório | não iniciada |
 
 ---
@@ -254,7 +254,7 @@ supressão por `n < 3` sustenta depois.
 
 ---
 
-## Fase 5 — Motor de cálculo
+## Fase 5 — Motor de cálculo (concluída)
 
 **Em TDD estrito: os testes vêm antes da implementação.**
 
@@ -263,15 +263,49 @@ que apenas orquestra — a regra fica no domain. Por fim a tela `/app/rodadas/:i
 taxa de resposta ao vivo quebrada **por área e por vínculo**, não só o total.
 
 **Pronto quando.** Os testes abaixo passam e o cockpit mostra a quebra por recorte.
+**Atingido**, exceto a edge function (ver "Não incluído").
 
-**Testes que provam (escrever primeiro, no mínimo).**
+**O que foi entregue.**
 
-- Resposta com `nao_sei` não altera a maturidade, mas reduz a visibilidade.
+- `src/domain/scoring.ts` — normalização, maturidade ponderada, visibilidade,
+  dispersão, gap hierárquico e eNPS. Escrito **depois** dos testes.
+- `src/domain/cobertura.ts` — taxa de resposta por área e por vínculo, com aviso de
+  quais recortes ficarão de fora do relatório por sigilo.
+- `src/components/shared/Cobertura.tsx`, ligado em `/app/rodadas/:id` assim que a
+  rodada sai de rascunho.
+
+**Duas decisões que o `CLAUDE.md` não fixava.**
+
+1. **Só itens com peso > 0 entram na maturidade E na visibilidade.** No seed, as
+   perguntas abertas e a escala 0–10 têm peso 0. Se elas entrassem no denominador da
+   visibilidade, uma aberta em branco — que é normal e esperada — derrubaria a
+   visibilidade da dimensão e faria a nota sumir por engano.
+2. **Recorte suprimido não emite nem visibilidade.** A supressão é promessa de sigilo:
+   "uma pessoa da sua área respondeu, e ela não sabe de nada" também identifica.
+
+**Testes que provam.** Escritos primeiro: a primeira execução falhou por o módulo
+não existir. 84 testes no total, sendo 32 de scoring e 7 de cobertura.
+
+- Resposta com `nao_sei` não altera a maturidade, mas reduz a visibilidade — e um
+  teste dedicado prova que ela é **diferente de responder 1**.
 - Pergunta invertida é espelhada (`6 - v`) antes de pontuar.
-- `visibilidade < 40%` retorna `confiavel = false` e maturidade nula.
-- Recorte com `n < 3` retorna `suprimido = true`.
-- Gap hierárquico com zero colaboradores não quebra e retorna nulo.
-- eNPS com `n < 5` é suprimido.
+- `visibilidade < 40%` retorna `confiavel = false` e maturidade nula; exatamente 40%
+  ainda emite (o limiar é "abaixo de", não "até").
+- Recorte com `n < 3` retorna `suprimido = true` e não vaza nem a visibilidade.
+- Gap hierárquico com zero colaboradores — ou zero liderança — retorna nulo.
+- eNPS com `n < 5` é suprimido; 7 e 8 contam como neutros; nota fora da escala é
+  ignorada em vez de distorcer.
+- Peso zero não entra na maturidade, e peso total zero não divide por zero.
+- Cobertura: a área que não respondeu aparece mesmo com taxa geral boa, e o recorte
+  abaixo do mínimo é sinalizado antes de a rodada ser encerrada.
+
+**Verificado por sabotagem.** Três mutações no motor, todas pegas: fazer "não sei"
+pontuar zero derruba 4 testes (inclusive o que compara com responder 1); ignorar o
+limiar de visibilidade derruba 2; remover a supressão por amostra derruba 2.
+
+**Não incluído.** A edge function `calcular-scores` — ela só orquestra, e orquestrar
+exige um projeto Supabase conectado e respostas reais, que só existem depois da
+Fase 4. A regra, que é o que importa, já está pronta e testada no domínio.
 
 **Por que a quebra por recorte é critério de pronto.** 80% de resposta geral com 0% do
 financeiro é diagnóstico inválido, e o consultor precisa ver isso **antes** de
