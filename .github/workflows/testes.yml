@@ -1,0 +1,37 @@
+name: Testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Testes
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+      - name: Nenhum segredo no código do frontend
+        # Espelha o item do checklist do CLAUDE.md. A service_role e as chaves
+        # de IA vivem nos secrets das edge functions; se alguma aparecer em
+        # src/, ela vai para o bundle que qualquer visitante baixa.
+        run: |
+          if grep -rniE "service_role|sk-[a-zA-Z0-9]{16,}|anthropic" src/; then
+            echo "::error::Possível segredo em src/"
+            exit 1
+          fi
+          echo "ok — nada encontrado"

@@ -216,6 +216,25 @@ Confira: `curl -X POST https://SEU-REF.supabase.co/functions/v1/responder-inicio
 deve responder `{"ok":false,"motivo":"token_ausente"}`. Se responder 404, a function
 não foi publicada.
 
+### Publicar automaticamente a cada push (opcional, recomendado)
+
+O repositório traz `.github/workflows/deploy-functions.yml`, que republica as três
+functions sempre que elas mudam. Para ligar, crie dois secrets no GitHub
+(**Settings → Secrets and variables → Actions → New repository secret**):
+
+| Nome | Valor |
+| --- | --- |
+| `SUPABASE_ACCESS_TOKEN` | gere em <https://supabase.com/dashboard/account/tokens> |
+| `SUPABASE_PROJECT_REF` | o ref do projeto (o trecho antes de `.supabase.co`) |
+
+Depois disso, publicar vira `git push`.
+
+> O workflow **não** roda `supabase db push`. As migrations foram aplicadas à mão pelo
+> SQL Editor, então a tabela de controle do Supabase não tem registro delas — um
+> `db push` tentaria recriar os tipos e falharia. Migration nova continua sendo passo
+> manual pelo SQL Editor, até alguém rodar `supabase migration repair` para
+> sincronizar o histórico.
+
 ## Passo 8 — Criar o primeiro consultor
 
 Não existe tela de cadastro: `/app` é acesso restrito, então as contas são criadas por
