@@ -14,7 +14,7 @@ existe, a pendência está registrada em `docs/ARQUITETURA.md` §11 — a regra 
 | 0 · Fundação do repositório | **concluída** |
 | 1 · Fundação | **concluída** |
 | 2 · Clientes e rodadas | **concluída** |
-| 3 · Banco de perguntas | não iniciada |
+| 3 · Banco de perguntas | **concluída** |
 | 4 · Formulário do respondente | não iniciada |
 | 5 · Motor de cálculo | não iniciada |
 | 6 · Relatório | não iniciada |
@@ -153,25 +153,53 @@ Fase 4; o token, porém, já é definitivo.
 
 ---
 
-## Fase 3 — Banco de perguntas
+## Fase 3 — Banco de perguntas (concluída)
 
 **Escopo.** Seed do banco de perguntas via migration **idempotente**: rodar duas vezes
 não duplica. Depois, a tela `/app/perguntas` para visualizar, ativar/desativar e
 editar, agrupada por bloco e dimensão.
 
 **Pronto quando.** A migration roda duas vezes seguidas e a contagem de perguntas não
-muda; a tela agrupa por bloco e dimensão; ativar/desativar persiste.
+muda; a tela agrupa por bloco e dimensão. **Atingido**, com uma ressalva registrada
+abaixo sobre ativar/desativar.
+
+**O que foi entregue.** `supabase/migrations/20260807000003_seed_perguntas.sql` com 146
+perguntas e a tela `/app/perguntas`.
+
+**Dois ajustes no arquivo recebido**, ambos necessários para ele rodar:
+
+1. **Renomeado** de `0003_seed_perguntas.sql` para `20260807000003_seed_perguntas.sql`.
+   As migrations são aplicadas em ordem alfabética, e `0003_` vem **antes** de
+   `20260806000001_schema.sql` — o seed rodaria antes de as tabelas existirem.
+2. **Cast explícito** `bloco::pergunta_bloco` e `tipo::pergunta_tipo` no upsert. A
+   tabela temporária guarda texto e o schema usa enums; o Postgres não converte
+   sozinho em `insert ... select`. Efeito colateral bem-vindo: bloco ou tipo inválido
+   passa a falhar na migration, em vez de entrar como dado ruim.
 
 **Testes que provam.**
 
-- Idempotência: aplicar o seed duas vezes mantém a mesma contagem e os mesmos
-  `codigo` únicos.
-- Toda pergunta objetiva do seed tem `permite_nao_sei = true` — é o princípio central
-  do produto virando invariante de dados, verificada no seed e não só na UI.
-- Perguntas invertidas estão marcadas com `invertida = true` (a Fase 5 depende disso).
+`tests/db/05-seed-perguntas.sql`, via `npm run test:db`:
 
-**Entrada necessária.** O conteúdo das perguntas vem de fora (seção 7 do blueprint) e
-precisa ser fornecido no início da sessão desta fase.
+- **Idempotência**: o teste inclui a própria migration de novo e confere que a
+  contagem segue 146, que nada foi desativado e que o enunciado não mudou.
+- **Desativação, não exclusão**: uma pergunta fora do seed vira `ativa = false` e
+  continua na tabela — apagá-la levaria junto as respostas históricas que a referenciam.
+- **Invertidas verificadas uma a uma, por código**, e nenhuma além das 11. Inversão
+  errada não quebra nada: produz um diagnóstico invertido e plausível, o pior tipo de
+  erro aqui. Confirmado por sabotagem — tirar a marca de `D1.05` faz o teste falhar
+  com o código no texto do erro.
+- **O princípio central como invariante de dados**: nenhuma pergunta objetiva que
+  pontua existe sem a opção "não sei".
+- Pesos 2.0 em `FIN.02`, `FIN.03` e `LID.11`; pergunta aberta com peso 0.
+- As seis perguntas das três dependências condicionais existem, e nenhum follow-up é
+  obrigatório — ficar em branco é dado.
+- Distribuição por bloco e por área conferida contra a tabela das notas: 146 no total.
+
+**Ressalva sobre a tela.** `/app/perguntas` ficou **somente leitura**. O catálogo é
+global: um consultor ativando ou editando uma pergunta mudaria o questionário das
+rodadas de todos os outros. A policy de escrita não existe (o RLS nega por padrão) e a
+decisão de quem pode alterar segue pendente em `ARQUITETURA.md` §11.6. Até lá a
+escrita é o próprio seed — versionado, revisável e idempotente.
 
 ---
 

@@ -4,6 +4,7 @@ import { useSessao } from './auth/useSessao'
 const navegacao = [
   { para: '/app', rotulo: 'Painel', fim: true },
   { para: '/app/clientes', rotulo: 'Clientes', fim: false },
+  { para: '/app/perguntas', rotulo: 'Perguntas', fim: false },
 ]
 
 export function AppLayout() {

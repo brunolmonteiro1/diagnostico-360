@@ -221,3 +221,19 @@ export async function listarModulosDeArea(): Promise<string[]> {
 
   return [...areas].sort()
 }
+
+// --------------------------------------------------------------------------
+// Perguntas
+// --------------------------------------------------------------------------
+
+export type Pergunta = Tabelas['perguntas']['Row']
+
+export async function listarPerguntas(): Promise<Pergunta[]> {
+  const { data, error } = await supabase
+    .from('perguntas')
+    .select('*')
+    .order('ordem')
+
+  if (error) erro('Não foi possível carregar as perguntas', error)
+  return data
+}

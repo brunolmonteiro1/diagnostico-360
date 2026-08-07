@@ -4,6 +4,7 @@ import { PainelPage } from './app/PainelPage'
 import { ClientesPage } from './app/clientes/ClientesPage'
 import { ClienteDetalhePage } from './app/clientes/ClienteDetalhePage'
 import { RodadaDetalhePage } from './app/rodadas/RodadaDetalhePage'
+import { PerguntasPage } from './app/perguntas/PerguntasPage'
 import { LoginPage } from './app/auth/LoginPage'
 import { RotaProtegida } from './app/auth/RotaProtegida'
 
@@ -26,6 +27,7 @@ export function AppRoutes() {
           <Route path="clientes" element={<ClientesPage />} />
           <Route path="clientes/:clienteId" element={<ClienteDetalhePage />} />
           <Route path="rodadas/:rodadaId" element={<RodadaDetalhePage />} />
+          <Route path="perguntas" element={<PerguntasPage />} />
         </Route>
       </Route>
 

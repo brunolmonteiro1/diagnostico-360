@@ -111,18 +111,24 @@ REGRAS DURAS, cada uma com teste próprio:
 Não pode parecer um Google Forms. Se parecer amador, as pessoas respondem de qualquer
 jeito e o dado não presta.
 
-Tokens:
-  --bg-dark: #0F1115    --bg-light: #F4F4F2    --accent: #D97706
+Tokens (marinho e dourado são a identidade da Ethos Lab):
+  --bg-dark: #16324D    --bg-light: #F4F4F2    --accent: #C8A951
   --critico: #B91C1C    --atencao: #D97706     --saudavel: #15803D
   --sem-dado: #64748B   (cinza — nunca vermelho; ausência de dado não é erro)
+
+O acento é o dourado da marca. O marinho aparece como dominante de fundo —
+cabeçalho, barras, superfícies escuras — e NUNCA como cor de botão primário.
+A escala de diagnóstico (crítico/atenção/saudável/sem-dado) não é marca: não
+troque essas quatro por cor de identidade, elas precisam ler como semáforo.
 
 Títulos em Oswald, corpo em Inter, escala 1.25x, muito respiro.
 Fundo claro com grade de pontos: radial-gradient(circle, #00000010 1px, transparent 1px)
 a 32px. Numeração da seção em número grande a 5% de opacidade atrás do título.
-Card de pergunta ativo com borda esquerda de 3px em âmbar.
+Card de pergunta ativo com borda esquerda de 3px no dourado do acento.
 
-PROIBIDO: azul genérico em botão, gradiente roxo-azul, card padrão border-radius 8px +
-box-shadow default, ilustração de equipe sorrindo, emoji em título.
+PROIBIDO: azul default de framework em botão (o marinho da marca como fundo é outra
+coisa e é permitido), gradiente roxo-azul, card padrão border-radius 8px + box-shadow
+default, ilustração de equipe sorrindo, emoji em título.
 
 ## Fases
 

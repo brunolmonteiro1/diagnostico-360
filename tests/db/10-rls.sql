@@ -54,8 +54,10 @@ insert into respondentes (id, rodada_id, convite_id, nome) values
    'bbbbbbbb-0000-0000-0000-000000000003', 'Pessoa B');
 
 insert into perguntas (id, codigo, bloco, tipo, enunciado) values
-  ('cccccccc-0000-0000-0000-000000000001', 'FIN.01', 'area', 'likert5', 'Existe DRE mensal?'),
-  ('cccccccc-0000-0000-0000-000000000002', 'FIN.02', 'area', 'likert5', 'O DRE é revisado?');
+  -- Códigos com prefixo TESTE. de propósito: o seed real ocupa FIN.*, D1.* etc.,
+  -- e o teste de RLS não pode depender do conteúdo do banco de perguntas.
+  ('cccccccc-0000-0000-0000-000000000001', 'TESTE.01', 'area', 'likert5', 'Pergunta de teste 1'),
+  ('cccccccc-0000-0000-0000-000000000002', 'TESTE.02', 'area', 'likert5', 'Pergunta de teste 2');
 
 insert into respostas (respondente_id, pergunta_id, valor_num) values
   ('aaaaaaaa-0000-0000-0000-000000000004', 'cccccccc-0000-0000-0000-000000000001', 4),

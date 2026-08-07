@@ -211,7 +211,7 @@ promete ao respondente.
 
 Utilitários de composição disponíveis: `.grade-blueprint` (grade de pontos a 32px),
 `.numero-secao` (numeração grande a 5% de opacidade atrás do título) e
-`.card-pergunta-ativo` (borda esquerda de 3px em âmbar).
+`.card-pergunta-ativo` (borda esquerda de 3px no acento dourado).
 
 Proibido: azul genérico em botão, gradiente roxo-azul, card padrão com
 `border-radius: 8px` + `box-shadow` default, ilustração de equipe sorrindo e emoji em
@@ -226,8 +226,8 @@ funcionar. Todas são reversíveis e nenhuma toca regra de produto.
 
 | Decisão | Porquê |
 | --- | --- |
-| `--accent` do shadcn recebe o âmbar `#D97706` | O `CLAUDE.md` define `--accent` como o âmbar da marca; o shadcn usa o mesmo nome para "fundo sutil de hover". Manter os dois significaria duas cores com o mesmo nome. O token do `CLAUDE.md` venceu. `--accent-foreground` ficou `#0F1115` (contraste ≈ 5,7:1 sobre o âmbar). |
-| Ação primária = `#0F1115`, não o âmbar | O âmbar é acento e foco. Botão primário em grafite mantém o âmbar com valor de destaque, e o `CLAUDE.md` proíbe azul genérico sem prescrever a cor do CTA. **Confirmar na Fase 2**, quando existir botão de verdade. |
+| `--accent` do shadcn recebe o acento da marca | O `CLAUDE.md` define `--accent` como o acento; o shadcn usa o mesmo nome para "fundo sutil de hover". Manter os dois significaria duas cores com o mesmo nome. O token do `CLAUDE.md` venceu. `--accent-foreground` é o marinho (contraste ≈ 5,6:1 sobre o dourado). |
+| Ação primária = marinho, não o dourado | O dourado é acento e foco; usá-lo no botão primário gastaria o destaque. **Confirmado na Fase 3**, junto com a troca da paleta para a identidade da Ethos Lab: marinho `#16324D` como dominante e dourado `#C8A951` como acento, mantendo a escala de diagnóstico (crítico/atenção/saudável/sem-dado) intacta — ela precisa ler como semáforo, não como marca. |
 | `--radius: 0.25rem` | O `CLAUDE.md` proíbe o card genérico de 8px. Cantos quase retos são a leitura direta de "planta técnica". |
 | Inter e Oswald via `@fontsource` | Fontes exigidas pelo `CLAUDE.md`. Auto-hospedadas em vez de Google Fonts: sem requisição a terceiro, sem variação de layout no carregamento. O `shadcn init` instalara Geist, que foi removida. |
 | `strict: true` no TypeScript | O scaffold do Vite não o traz. Numa base cujo núcleo é cálculo numérico com campos anuláveis, `strict` é o que impede um `null` de virar `0` silenciosamente. |

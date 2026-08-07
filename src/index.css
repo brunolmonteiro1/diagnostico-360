@@ -20,9 +20,12 @@
 
 :root {
   /* --- Tokens do CLAUDE.md (fonte da verdade) --- */
-  --bg-dark: #0f1115;
+  /* Marinho e dourado vêm da identidade da Ethos Lab. O marinho é dominante de
+     fundo; nunca vira cor de botão primário — a proibição do CLAUDE.md é contra
+     o azul default de framework, não contra a marca. */
+  --bg-dark: #16324d;
   --bg-light: #f4f4f2;
-  --accent-blueprint: #d97706;
+  --accent-blueprint: #c8a951;
   --critico: #b91c1c;
   --atencao: #d97706;
   --saudavel: #15803d;
@@ -37,7 +40,7 @@
   --popover: #ffffff;
   --popover-foreground: var(--bg-dark);
 
-  /* Ação primária = grafite da planta; o âmbar fica para acento e foco. */
+  /* Ação primária = marinho da marca; o dourado fica para acento e foco. */
   --primary: var(--bg-dark);
   --primary-foreground: var(--bg-light);
   --secondary: #e8e8e5;
@@ -45,7 +48,7 @@
   --muted: #e8e8e5;
   --muted-foreground: var(--sem-dado);
 
-  /* Acento âmbar do blueprint (decisão registrada em docs/ARQUITETURA.md). */
+  /* Acento dourado da Ethos Lab (decisão registrada em docs/ARQUITETURA.md). */
   --accent: var(--accent-blueprint);
   --accent-foreground: var(--bg-dark);
 
@@ -68,33 +71,33 @@
   --sidebar-foreground: var(--bg-light);
   --sidebar-primary: var(--accent-blueprint);
   --sidebar-primary-foreground: var(--bg-dark);
-  --sidebar-accent: #1b1e24;
+  --sidebar-accent: #1c3d5c;
   --sidebar-accent-foreground: var(--bg-light);
-  --sidebar-border: #262a31;
+  --sidebar-border: #24486a;
   --sidebar-ring: var(--accent-blueprint);
 }
 
 .dark {
   --background: var(--bg-dark);
   --foreground: var(--bg-light);
-  --card: #171a1f;
+  --card: #1c3d5c;
   --card-foreground: var(--bg-light);
-  --popover: #171a1f;
+  --popover: #1c3d5c;
   --popover-foreground: var(--bg-light);
 
   --primary: var(--bg-light);
   --primary-foreground: var(--bg-dark);
-  --secondary: #1b1e24;
+  --secondary: #1c3d5c;
   --secondary-foreground: var(--bg-light);
-  --muted: #1b1e24;
+  --muted: #1c3d5c;
   --muted-foreground: #94a3b8;
 
   --accent: var(--accent-blueprint);
   --accent-foreground: var(--bg-dark);
 
   --destructive: #dc2626;
-  --border: #262a31;
-  --input: #262a31;
+  --border: #24486a;
+  --input: #24486a;
   --ring: var(--accent-blueprint);
 }
 
@@ -220,7 +223,7 @@
     user-select: none;
   }
 
-  /* Card de pergunta ativo: borda esquerda de 3px em âmbar. */
+  /* Card de pergunta ativo: borda esquerda de 3px no acento. */
   .card-pergunta-ativo {
     border-left: 3px solid var(--accent-blueprint);
   }
