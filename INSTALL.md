@@ -177,6 +177,17 @@ FIM
 
 (Troque os três valores pelos seus.)
 
+> **`APP_DOMAIN` é só o nome do host.** Sem `http://`, sem porta, sem barra no fim.
+> `diagnostico.ethoslab.com.br` está certo; `http://187.77.63.219:3007` não. O
+> container corrige o que dá e avisa nos logs, mas **certificado só é emitido para
+> domínio** — autoridade certificadora não emite para endereço IP. Sem domínio, o
+> painel roda em HTTP e a senha do consultor trafega em texto puro: serve para testar,
+> não para uso real.
+
+> **Não mude o mapeamento de portas** enquanto quiser HTTPS. O `docker-compose.yml`
+> publica 80 e 443 porque é por elas que o Let's Encrypt valida o domínio. Trocar para
+> `3007:80`, por exemplo, faz o site abrir mas impede a emissão do certificado.
+
 Suba:
 
 ```bash
@@ -314,7 +325,8 @@ a VPS do zero, basta repetir este guia.
 | --- | --- |
 | Página não abre | `docker compose logs --tail 50` e leia a última mensagem |
 | "Configuração de ambiente inválida" na tela | Falta `VITE_SUPABASE_URL` ou `VITE_SUPABASE_ANON_KEY` no `.env.deploy`; corrija e rode `docker compose --env-file .env.deploy up -d` |
-| Site abre em HTTP, sem cadeado | `APP_DOMAIN` vazio no `.env.deploy`, ou o DNS ainda não aponta para a VPS |
+| Site abre em HTTP, sem cadeado | `APP_DOMAIN` vazio, com `http://` na frente, com porta, ou apontando para um IP. Os logs (`docker compose logs`) dizem qual dos casos é |
+| "Not secure" no navegador | O mesmo: sem domínio válido não há certificado. Aponte um subdomínio para o IP e refaça o Passo 7 |
 | Erro de certificado, ou fica tentando emitir | O DNS precisa apontar para a VPS **antes** de subir. Confira com `ping`, e confira o firewall da Hostinger (portas 80 e 443) |
 | Login não entra e a senha está certa | O usuário foi criado sem `Auto Confirm User`. Apague e recrie marcando a opção |
 | Painel abre mas "Perguntas" está vazio | O arquivo 3 do Passo 3 não rodou. Rode de novo — ele não duplica |
