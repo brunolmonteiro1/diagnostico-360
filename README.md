@@ -66,13 +66,23 @@ Sem `E2E_TOKEN` os testes são pulados, não falham.
 
 ## Estado do projeto
 
-Fases 0 e 1 concluídas: migrations com RLS, tipos gerados do schema, autenticação de
-consultor e rota protegida `/app`. As fases 2 a 6 estão descritas em
-[`docs/PLANO.md`](docs/PLANO.md).
+| Fase | Estado |
+| --- | --- |
+| 0 · Fundação do repositório | concluída |
+| 1 · Banco, RLS, tipos, auth | concluída |
+| 2 · Clientes, rodadas, convites | concluída |
+| 3 · Banco de perguntas (146) | concluída |
+| 4 · Formulário do respondente | falta rodar o e2e num ambiente real |
+| 5 · Motor de cálculo | concluída |
+| 6 · Relatório | não iniciada |
 
-Nenhum projeto Supabase está conectado — ver
-[`supabase/README.md`](supabase/README.md). As migrations rodam contra qualquer
-Postgres com o shim de `tests/db/00-auth-shim.sql`.
+Detalhes de cada uma, com o que foi entregue e o que ficou de fora, em
+[`docs/PLANO.md`](docs/PLANO.md). Decisões e pendências em
+[`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
+
+As migrations rodam contra qualquer Postgres com o shim de
+`tests/db/00-auth-shim.sql` — é assim que os testes de RLS funcionam sem depender de
+um projeto Supabase.
 
 ## Deploy
 
