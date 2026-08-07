@@ -22,6 +22,22 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:4173',
     trace: 'retain-on-failure',
+    // Ambientes com Chromium pré-instalado em local não padrão (sem os
+    // browsers baixados pelo Playwright) apontam aqui em vez de reinstalar.
+    launchOptions: process.env.PLAYWRIGHT_CHROMIUM_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH }
+      : {},
+    // O navegador do Playwright NÃO herda HTTPS_PROXY do processo — precisa
+    // ser configurado explicitamente. Sem isto, atrás de um proxy de saída
+    // obrigatório o app fica preso em "Carregando…" para sempre: o baseURL
+    // (local) abre normal, mas a chamada às edge functions do Supabase nunca
+    // sai.
+    proxy: process.env.HTTPS_PROXY
+      ? { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' }
+      : undefined,
+    // Proxies corporativos costumam interceptar TLS com CA própria; sem isto
+    // o Chromium rejeita o certificado mesmo com o túnel funcionando.
+    ignoreHTTPSErrors: !!process.env.HTTPS_PROXY,
   },
 
   projects: [
