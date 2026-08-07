@@ -15,7 +15,7 @@ existe, a pendência está registrada em `docs/ARQUITETURA.md` §11 — a regra 
 | 1 · Fundação | **concluída** |
 | 2 · Clientes e rodadas | **concluída** |
 | 3 · Banco de perguntas | **concluída** |
-| 4 · Formulário do respondente | parcial — só o domínio |
+| 4 · Formulário do respondente | quase — falta o e2e |
 | 5 · Motor de cálculo | **concluída** |
 | 6 · Relatório | não iniciada |
 
@@ -255,8 +255,32 @@ escrevê-lo antes das edge functions porque não depende de nenhuma delas:
 Verificado por sabotagem: remover a checagem do bloco de liderança faz 4 testes
 falharem, entre eles o que prova que colaborador não recebe o bloco.
 
-**Falta.** As três edge functions, as 7 telas, o autosave e o e2e de retomada — tudo
-isso exige um projeto Supabase conectado.
+**Também feito.**
+
+- `supabase/functions/` — `responder-inicio`, `responder-salvar`, `responder-concluir`,
+  com base compartilhada. Recusa é 200 com motivo no corpo, não erro HTTP: token
+  expirado é situação prevista, e a pessoa precisa de explicação, não de tela de erro.
+- `src/responder/etapas.ts` — monta as telas a partir das perguntas aplicáveis, e
+  `etapaDeRetomada` volta para a tela onde a pessoa parou, não para a seguinte.
+- `src/responder/CampoPergunta.tsx` — os oito tipos de pergunta e a opção "Não sei",
+  **abaixo de uma linha divisória e fora da escala**, em `--sem-dado`. Se ela
+  parecesse um sexto botão no meio dos cinco, as pessoas a marcariam como "mais ou
+  menos" e ela deixaria de medir visibilidade.
+- `src/responder/ResponderPage.tsx` — fluxo completo, autosave a cada resposta, texto
+  de abertura literal, progresso sobre as aplicáveis.
+
+**Decisão registrada.** As perguntas `ID.01`–`ID.10` existem em `perguntas` para
+definir o formulário, mas as respostas delas gravam em `respondentes`, não em
+`respostas`. É de lá que saem o roteamento condicional e a quebra do cockpit; gravar
+nos dois lugares criaria duas versões da mesma verdade.
+
+**Pendência.** `FIM.01` (grau de confiança) grava como resposta normal, e a coluna
+`respondentes.autoavaliacao_confianca` fica sem uso. O `CLAUDE.md` prevê os dois
+lugares e a coluna é numérica enquanto a pergunta é `alta|media|baixa` — mapear uma na
+outra seria inventar. Decidir na Fase 6, quando o relatório for usar o dado.
+
+**Falta.** O e2e de retomada com Playwright — ele exige o banco criado e as functions
+publicadas. É o único critério da fase ainda em aberto.
 
 **Testes que provam.**
 

@@ -7,6 +7,7 @@ import { RodadaDetalhePage } from './app/rodadas/RodadaDetalhePage'
 import { PerguntasPage } from './app/perguntas/PerguntasPage'
 import { LoginPage } from './app/auth/LoginPage'
 import { RotaProtegida } from './app/auth/RotaProtegida'
+import { ResponderPage } from './responder/ResponderPage'
 
 /**
  * Separado de <App> para que os testes montem as rotas sem BrowserRouter e sem
@@ -20,6 +21,9 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<Navigate to="/app" replace />} />
       <Route path="/login" element={<LoginPage />} />
+
+      {/* Fluxo público: sem sessão, sem layout do consultor. O token é a credencial. */}
+      <Route path="/responder/:token" element={<ResponderPage />} />
 
       <Route element={<RotaProtegida />}>
         <Route path="/app" element={<AppLayout />}>
