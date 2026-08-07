@@ -78,7 +78,7 @@ export function RodadaDetalhePage() {
     [convites.dados, respondentes.dados]
   )
 
-  async function mudarStatus(para: Parameters<typeof rotuloAcao>[0]) {
+  async function mudarStatus(para: Parameters<typeof rotuloAcao>[1]) {
     if (!dados || !podeTransicionar(dados.status, para)) return
     setErroAcao(null)
     try {
@@ -155,7 +155,7 @@ export function RodadaDetalhePage() {
                     variant={para === 'arquivada' ? 'outline' : 'default'}
                     onClick={() => void mudarStatus(para)}
                   >
-                    {rotuloAcao(para)}
+                    {rotuloAcao(dados.status, para)}
                   </Button>
                 ))}
               </div>

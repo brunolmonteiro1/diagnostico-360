@@ -3,6 +3,7 @@ import {
   aceitaRespostas,
   impedimentosParaAbrir,
   podeTransicionar,
+  rotuloAcao,
   transicoesDe,
 } from './rodada-status'
 
@@ -25,8 +26,16 @@ describe('ciclo de vida da rodada', () => {
     expect(podeTransicionar('encerrada', 'aberta')).toBe(false)
   })
 
-  it('não faz nada a partir de arquivada', () => {
-    expect(transicoesDe('arquivada')).toEqual([])
+  it('desarquiva de volta para encerrada', () => {
+    // Arquivar é organização, não trava metodológica: sem esta volta, um
+    // clique a mais em "Arquivar" prendia a rodada sem ação nenhuma possível.
+    expect(podeTransicionar('arquivada', 'encerrada')).toBe(true)
+    expect(transicoesDe('arquivada')).toEqual(['encerrada'])
+  })
+
+  it('arquivada não pula direto para aberta nem rascunho', () => {
+    expect(podeTransicionar('arquivada', 'aberta')).toBe(false)
+    expect(podeTransicionar('arquivada', 'rascunho')).toBe(false)
   })
 
   it('não pula de rascunho direto para encerrada', () => {
@@ -38,6 +47,21 @@ describe('ciclo de vida da rodada', () => {
     expect(aceitaRespostas('rascunho')).toBe(false)
     expect(aceitaRespostas('encerrada')).toBe(false)
     expect(aceitaRespostas('arquivada')).toBe(false)
+  })
+})
+
+describe('rotuloAcao', () => {
+  it('chama de "Encerrar rodada" quem vem de aberta', () => {
+    expect(rotuloAcao('aberta', 'encerrada')).toBe('Encerrar rodada')
+  })
+
+  it('chama de "Desarquivar", não "Encerrar rodada", quem vem de arquivada', () => {
+    // Mesmo destino (encerrada), rótulo diferente por causa da origem.
+    expect(rotuloAcao('arquivada', 'encerrada')).toBe('Desarquivar')
+  })
+
+  it('chama de "Arquivar" quem vai para arquivada', () => {
+    expect(rotuloAcao('encerrada', 'arquivada')).toBe('Arquivar')
   })
 })
 
