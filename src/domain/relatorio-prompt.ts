@@ -1,4 +1,4 @@
-import type { PayloadRelatorio } from './relatorio'
+import type { PayloadRelatorio } from './relatorio.ts'
 
 /**
  * Prompt de sistema e schema de saída da IA do relatório.

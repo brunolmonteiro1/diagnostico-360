@@ -5,10 +5,15 @@ import {
   normalizarItem,
   type Item,
   type ResultadoRecorte,
-} from './scoring'
+} from './scoring.ts'
 
 /**
  * Agregação para o relatório — funções puras, sem I/O.
+ *
+ * O `.ts` explícito no import acima não é estilo: este arquivo é carregado
+ * também pela edge function `gerar-relatorio`, e o Deno exige extensão. O
+ * frontend continua resolvendo por causa de `allowImportingTsExtensions` no
+ * tsconfig. Tirar a extensão quebra o deploy, não o build.
  *
  * A garantia central deste arquivo é estrutural, não de convenção: nenhum
  * tipo exportado aqui tem campo capaz de carregar nome, e-mail ou id de
