@@ -15,7 +15,7 @@ existe, a pendência está registrada em `docs/ARQUITETURA.md` §11 — a regra 
 | 1 · Fundação | **concluída** |
 | 2 · Clientes e rodadas | **concluída** |
 | 3 · Banco de perguntas | **concluída** |
-| 4 · Formulário do respondente | não iniciada |
+| 4 · Formulário do respondente | parcial — só o domínio |
 | 5 · Motor de cálculo | **concluída** |
 | 6 · Relatório | não iniciada |
 
@@ -239,6 +239,24 @@ fase, incluindo as três observações numeradas — ele é a promessa de sigilo
 supressão por `n < 3` sustenta depois.
 
 **Pronto quando.** O e2e de retomada passa e nenhum requisito crítico está pendente.
+**Ainda não.**
+
+**Já feito (o requisito 4).** `src/domain/elegibilidade.ts`, puro e testado — dá para
+escrevê-lo antes das edge functions porque não depende de nenhuma delas:
+
+- bloco de área vem de `ID.04`; `diretoria` e `outra` não têm bloco próprio;
+- bloco de liderança só para `socio` e `gestor`, e o escopo de vínculo mais estreito
+  ainda vale dentro dele (`LID.07`, pró-labore, é só do sócio);
+- follow-ups `D4.03`, `COM.04` e `FIN.04` só depois da âncora ≥ 4 e não "não sei";
+- módulo de área precisa estar ativo **na rodada** — franqueadora não aparece em
+  cliente que não é franquia;
+- progresso sobre as aplicáveis, com "não sei" contando como respondida.
+
+Verificado por sabotagem: remover a checagem do bloco de liderança faz 4 testes
+falharem, entre eles o que prova que colaborador não recebe o bloco.
+
+**Falta.** As três edge functions, as 7 telas, o autosave e o e2e de retomada — tudo
+isso exige um projeto Supabase conectado.
 
 **Testes que provam.**
 
