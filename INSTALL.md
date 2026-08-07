@@ -193,6 +193,29 @@ docker compose logs -f
 Quando aparecer `→ Servindo em https://seu-dominio (certificado automático)`, está
 pronto. Para sair dos logs: `Ctrl+C` — o sistema continua rodando.
 
+## Passo 7b — Publicar as edge functions
+
+O formulário do respondente não funciona sem elas: é por ali que passa toda leitura e
+gravação de quem não tem login.
+
+Na **sua máquina** (não na VPS), com o código do repositório:
+
+```bash
+npm i -g supabase
+supabase login
+supabase link --project-ref SEU-REF
+supabase functions deploy responder-inicio
+supabase functions deploy responder-salvar
+supabase functions deploy responder-concluir
+```
+
+Não há segredo para configurar: o Supabase injeta `SUPABASE_URL` e
+`SUPABASE_SERVICE_ROLE_KEY` nas functions automaticamente.
+
+Confira: `curl -X POST https://SEU-REF.supabase.co/functions/v1/responder-inicio -H "apikey: SUA-ANON-KEY" -H "Content-Type: application/json" -d '{}'`
+deve responder `{"ok":false,"motivo":"token_ausente"}`. Se responder 404, a function
+não foi publicada.
+
 ## Passo 8 — Criar o primeiro consultor
 
 Não existe tela de cadastro: `/app` é acesso restrito, então as contas são criadas por
@@ -286,6 +309,10 @@ a VPS do zero, basta repetir este guia.
 
 ## Segurança — o que não fazer
 
+- **Não siga a dica que o PostgREST dá numa mensagem de erro.** Quando algo é negado,
+  ele sugere `GRANT SELECT ON public.clientes TO anon;`. Rodar isso abre o banco
+  inteiro para qualquer visitante do site — é exatamente o que a instalação impede.
+  Permissão negada para `anon` é o comportamento correto, não um defeito.
 - **Não** coloque a `service_role` do Supabase no `.env.deploy` nem em nenhuma
   variável `VITE_`. Tudo com esse prefixo vai para o navegador de qualquer visitante.
 - **Não** desligue a RLS para "resolver" um problema de permissão. Ela é o que impede
