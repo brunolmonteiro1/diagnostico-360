@@ -51,6 +51,19 @@ TEST_DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres npm run test:db
 
 Sem `TEST_DATABASE_URL` o script sai com código 2 e explica o que falta.
 
+### E2E do respondente
+
+O caminho crítico do produto. Precisa de ambiente real — banco criado, edge functions
+publicadas e uma rodada aberta com convite. Contra mock não provaria nada: o que se
+testa é justamente a ida e volta ao servidor.
+
+```bash
+npm run build && npm run preview &
+E2E_BASE_URL=http://localhost:4173 E2E_TOKEN=<token-de-um-convite> npm run e2e
+```
+
+Sem `E2E_TOKEN` os testes são pulados, não falham.
+
 ## Estado do projeto
 
 Fases 0 e 1 concluídas: migrations com RLS, tipos gerados do schema, autenticação de
