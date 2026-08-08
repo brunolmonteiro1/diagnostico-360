@@ -99,7 +99,6 @@ export function RodadaDetalhePage() {
     prazo_em?: string | null
     mensagem_abertura?: string | null
     modulos_ativos?: string[]
-    anonima?: boolean
   }) {
     if (!dados) return
     setErroAcao(null)
@@ -241,21 +240,13 @@ export function RodadaDetalhePage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <span className="block text-sm font-medium">Identificação</span>
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        disabled={!editavel}
-                        defaultChecked={dados.anonima}
-                        onChange={(e) =>
-                          void salvarConfiguracao({ anonima: e.target.checked })
-                        }
-                        className="accent-accent size-4"
-                      />
-                      Rodada anônima
-                    </label>
-                  </div>
+                  {/* O controle "Rodada anônima" foi removido: `rodadas.anonima`
+                      era gravado, trafegava até o cliente do respondente e nunca
+                      era lido por tela nenhuma. Um controle de privacidade que
+                      não faz nada é pior que controle nenhum — dava a impressão
+                      de proteger sem proteger. A promessa de sigilo que vale
+                      está escrita na abertura e é cumprida pelo consultor, não
+                      por um flag. Ver docs/ARQUITETURA.md §12. */}
                 </div>
 
                 <div className="space-y-2">

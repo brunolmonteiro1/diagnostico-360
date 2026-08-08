@@ -283,6 +283,7 @@ export function ResponderPage() {
         <TelaAbertura
           empresa={dados!.empresa}
           mensagem={dados!.rodada.mensagemAbertura}
+          vinculo={(perfil.vinculo as string | null) ?? null}
           aoComecar={() => irPara(1)}
         />
       )}
@@ -380,12 +381,20 @@ function Moldura({ children }: { children: React.ReactNode }) {
 function TelaAbertura({
   empresa,
   mensagem,
+  vinculo,
   aoComecar,
 }: {
   empresa: string
   mensagem: string | null
+  /** Nulo na primeira visita — a pessoa ainda não disse quem é. */
+  vinculo: string | null
   aoComecar: () => void
 }) {
+  // Quem decide recebe o pedido de autoavaliação franca; quem é subordinado,
+  // não. Pedir a um colaborador que "não amenize para proteger ninguém" numa
+  // empresa pequena é transferir a ele um risco que não é dele — e costuma
+  // produzir o oposto: resposta cautelosa.
+  const decide = vinculo === 'socio' || vinculo === 'gestor'
   return (
     <div>
       <div className="bg-accent mb-4 h-[3px] w-10" />
@@ -399,9 +408,12 @@ function TelaAbertura({
           prática, na visão de quem faz o trabalho.
         </p>
 
-        <p>Leva de 15 a 25 minutos. Você pode parar e voltar depois pelo mesmo link.</p>
+        <p>
+          Leva de 35 a 55 minutos, dependendo da sua função. Você pode parar e voltar
+          depois pelo mesmo link — o que já respondeu fica salvo.
+        </p>
 
-        <p className="font-medium">Três coisas importantes:</p>
+        <p className="font-medium">Quatro coisas importantes:</p>
 
         <ol className="space-y-4">
           <li className="card-pergunta-ativo border-border border bg-white p-4">
@@ -413,17 +425,52 @@ function TelaAbertura({
           </li>
           <li className="card-pergunta-ativo border-border border bg-white p-4">
             <span className="font-heading text-sem-dado mr-2">2</span>
-            Suas respostas individuais não serão mostradas para a empresa. O relatório
-            entregue à direção apresenta os dados de forma agregada. A identificação
-            serve para cruzarmos as respostas por área e por função — não para avaliar
-            pessoas.
+            Quando a pergunta for sobre algo que <strong>não existe</strong> na empresa,
+            use a opção "Não existe atualmente" em vez de dar nota baixa. As duas coisas
+            são diferentes, e essa diferença importa para o diagnóstico.
           </li>
+          {/* A promessa antiga dizia que o relatório sairia "de forma agregada".
+              Numa equipe pequena não há o que agregar — a frase prometia um
+              mecanismo que não existiria. A promessa abaixo é a que se cumpre. */}
           <li className="card-pergunta-ativo border-border border bg-white p-4">
             <span className="font-heading text-sem-dado mr-2">3</span>
+            Suas respostas vão para a consultoria externa, não para a direção da empresa.
+            O relatório entregue à direção é escrito por nós, por temas e padrões — sem
+            reproduzir respostas de forma que se possa identificar quem escreveu. Como a
+            equipe é pequena, essa é uma promessa de método, e nós a assumimos por
+            escrito aqui.
+          </li>
+          <li className="card-pergunta-ativo border-border border bg-white p-4">
+            <span className="font-heading text-sem-dado mr-2">4</span>
             Não existe resposta certa. O que atrapalha o trabalho aqui é resposta
             bonita, não resposta ruim.
           </li>
         </ol>
+
+        <div className="border-border border-l-[3px] bg-white p-4">
+          <p className="text-sem-dado mb-2 text-xs tracking-[0.15em] uppercase">
+            Como responder
+          </p>
+          <p>
+            Responda pensando na <strong>realidade de hoje</strong>, não em como a
+            empresa deveria funcionar ou em como seria mais confortável descrevê-la —
+            inclusive quando houver informalidade, retrabalho, ausência de processo ou
+            problema ainda não resolvido. Sempre que puder, dê exemplos concretos:
+            episódios recentes, números, controles que vocês usam.
+          </p>
+          <p className="mt-3">
+            Se algo só funciona porque uma pessoa específica sabe fazer, isso não é um
+            processo estruturado — e vale registrar assim.
+          </p>
+          {decide && (
+            <p className="mt-3">
+              Algumas perguntas pedem que você avalie a própria gestão: a divisão de
+              trabalho entre os sócios, decisões que vêm sendo adiadas, os limites atuais
+              da liderança. É a parte mais útil do diagnóstico, e a que mais depende de
+              franqueza sua.
+            </p>
+          )}
+        </div>
 
         {mensagem && (
           <div className="border-border border-l-[3px] bg-white p-4">

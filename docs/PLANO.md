@@ -17,7 +17,8 @@ existe, a pendência está registrada em `docs/ARQUITETURA.md` §11 — a regra 
 | 3 · Banco de perguntas | **concluída** |
 | 4 · Formulário do respondente | quase — falta o e2e |
 | 5 · Motor de cálculo | **concluída** |
-| 6 · Relatório | quase — falta o deploy real e a verificação contra um modelo de verdade |
+| 6 · Relatório | pronta — function ACTIVE, relatório gerado de verdade |
+| 6.1 · Adequação a amostra pequena (Transdesk, n=4) | pronta — falta o piloto real com os 4 |
 
 ---
 
@@ -450,3 +451,50 @@ Vale para o conjunto, não para uma fase isolada.
 - [x] Relatório escreve "dado insuficiente" em rodada de teste com 2 respondentes — `relatorio.test.ts`
 - [x] Nenhum nome próprio das abertas aparece na narrativa — verdade por construção: nenhuma resposta aberta (`texto_curto`/`texto_longo`) entra no payload da IA (ver `ARQUITETURA.md` §12); não é revisão manual, é o payload não ter onde carregar o dado
 - [ ] Sem azul genérico em CTA, sem gradiente roxo-azul — só tokens existentes usados na Fase 6, mas não verificado visualmente em navegador nesta sessão
+
+
+---
+
+## Fase 6.1 — Adequação a amostra pequena (Transdesk)
+
+A Transdesk tem 4 pessoas, 2 delas sócios-operadores. Consequência medida: só o
+recorte "geral" por dimensão (n=4) sobrevive; liderança (2), equipe (2), gap,
+eNPS e todas as células do heatmap ficam suprimidos para sempre. **O eixo do
+instrumento passa de quantitativo a qualitativo** — o Likert serve para comparar
+as 4 percepções lado a lado, não para gerar estatística.
+
+**Entregue.**
+
+- Roteamento por áreas secundárias (ID.05) — sócio que acumula funções recebe os
+  blocos de todas as frentes que marca.
+- Justificativa condicional por nota baixa — 8 gatilhos que pedem exemplo
+  concreto na hora em que a pessoa aponta o problema.
+- "Não existe atualmente", separado de "não sei": pontua no piso e conta como
+  item válido, porque quem responde isso TEM visibilidade. 47 perguntas de
+  "existe X" ganharam a opção.
+- 24 perguntas novas (peso 0): 6 comentários opcionais por dimensão, 8
+  justificativas, 7 abertas obrigatórias por bloco de área, 3 de autoavaliação
+  só dos sócios (divisão entre sócios, decisões adiadas, limites da gestão).
+- 4 perguntas de área desativadas por redundância com o bloco universal.
+- Abertura reescrita: a promessa de agregação (impossível com n=4) deu lugar à
+  promessa de método — as respostas param no consultor. Orientação de franqueza
+  diferenciada por vínculo.
+- Checkbox "Rodada anônima" removido: era gravado e nunca lido.
+- Visão pergunta × pessoa na tela de respostas, com destaque de divergência.
+
+**Volume final medido no banco, por perfil:**
+
+| perfil | itens | fechadas | abertas obrigatórias | estimativa |
+|---|---|---|---|---|
+| sócios (3 áreas) | 117 | 83 | 11 | ~50 min |
+| Larissa (operacional+atendimento) | 77 | 54 | 7 | ~35 min |
+| Kethelin (admrh+financeiro) | 84 | 61 | 7 | ~40 min |
+
+**Falta.**
+
+- **Piloto real com as 4 pessoas.** Nada disso foi percorrido ponta a ponta por
+  um respondente de verdade nesta sessão — só por consulta ao banco e testes.
+- Verificação visual em navegador da matriz pergunta × pessoa e da nova opção
+  "não existe" no formulário.
+- Confirmar o e-mail do João: `joao.neves@trandesk.com.br` está sem o "s" que os
+  outros três têm (`@transdesk.com.br`).

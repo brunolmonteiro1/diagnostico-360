@@ -110,6 +110,66 @@ function rotuloDaOpcao(pergunta: PerguntaExport, valor: string | number): string
   return opcao?.rotulo ?? String(valor)
 }
 
+/** Distância entre a maior e a menor nota que já conta como divergência. */
+export const DISTANCIA_DIVERGENCIA = 2
+
+export type LinhaCruzada = {
+  pergunta: PerguntaExport
+  /**
+   * Uma célula por respondente, na MESMA ordem dos grupos recebidos. `null`
+   * quando a pergunta não se aplica àquela pessoa (colaborador não vê o bloco
+   * de liderança) ou quando ela ainda não respondeu — nos dois casos a coluna
+   * precisa continuar alinhada com as demais.
+   */
+  celulas: (RespostaComPergunta | null)[]
+  /**
+   * As notas dadas ficam a `DISTANCIA_DIVERGENCIA` ou mais umas das outras.
+   *
+   * Só nota entra na conta: "não sei" e "não existe" não viram zero, senão
+   * quem não tem visibilidade apareceria como quem discorda — o erro central
+   * que o produto inteiro existe para evitar.
+   */
+  divergente: boolean
+}
+
+/**
+ * Vira a leitura de "uma pessoa por vez" para "uma pergunta por vez".
+ *
+ * Com 3 ou 4 respondentes é assim que a divergência aparece: sócio marcando 5
+ * e quem executa marcando 1 na mesma frase é o achado que nenhuma média
+ * capturaria — e que na visão agrupada por pessoa exigiria rolar de um lado
+ * para o outro comparando de cabeça.
+ */
+export function cruzarPorPergunta(
+  grupos: readonly GrupoRespondente[]
+): LinhaCruzada[] {
+  const perguntas = new Map<string, PerguntaExport>()
+  for (const grupo of grupos) {
+    for (const r of grupo.respostas) perguntas.set(r.pergunta.id, r.pergunta)
+  }
+
+  return [...perguntas.values()]
+    .sort((a, b) => a.ordem - b.ordem)
+    .map((pergunta) => {
+      const celulas = grupos.map(
+        (g) => g.respostas.find((r) => r.pergunta.id === pergunta.id) ?? null
+      )
+
+      const notas = celulas
+        .filter((c): c is RespostaComPergunta => c !== null)
+        .filter((c) => !c.naoSei && !c.naoExiste && c.valorNum !== null)
+        .map((c) => c.valorNum as number)
+
+      return {
+        pergunta,
+        celulas,
+        divergente:
+          notas.length >= 2 &&
+          Math.max(...notas) - Math.min(...notas) >= DISTANCIA_DIVERGENCIA,
+      }
+    })
+}
+
 export type OpcoesExportacao = {
   /**
    * Falso (padrão) troca a pessoa por "Respondente N" e omite nome e cargo.

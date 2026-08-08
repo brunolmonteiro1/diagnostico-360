@@ -6,6 +6,7 @@ import { useConsulta } from '@/hooks/useConsulta'
 import { listarRespostasDaRodada, obterRodada } from '@/lib/api'
 import {
   agruparPorRespondente,
+  cruzarPorPergunta,
   formatarValor,
   montarTextoParaIa,
   type GrupoRespondente,
@@ -19,10 +20,13 @@ import {
  * o consultor ainda precisa ler o que foi respondido. A RLS já dava o acesso;
  * faltava a tela.
  */
+type Visao = 'pessoa' | 'pergunta'
+
 export function RespostasPage() {
   const { rodadaId = '' } = useParams()
   const [identificar, setIdentificar] = useState(false)
   const [copiado, setCopiado] = useState(false)
+  const [visao, setVisao] = useState<Visao>('pessoa')
 
   const rodada = useConsulta(useCallback(() => obterRodada(rodadaId), [rodadaId]), [rodadaId])
   const dados = useConsulta(
@@ -118,6 +122,29 @@ export function RespostasPage() {
         }
       />
 
+      <div className="mb-6 flex gap-2">
+        {(
+          [
+            ['pessoa', 'Por pessoa'],
+            ['pergunta', 'Por pergunta'],
+          ] as const
+        ).map(([chave, rotulo]) => (
+          <button
+            key={chave}
+            type="button"
+            aria-pressed={visao === chave}
+            onClick={() => setVisao(chave)}
+            className={`border px-3 py-2 text-sm ${
+              visao === chave
+                ? 'border-accent bg-accent/10'
+                : 'border-border bg-white hover:border-accent/50'
+            }`}
+          >
+            {rotulo}
+          </button>
+        ))}
+      </div>
+
       <Painel>
         <label className="flex items-start gap-3 text-sm">
           <input
@@ -153,18 +180,129 @@ export function RespostasPage() {
             ) : undefined
           }
         >
-          <div className="space-y-8">
-            {grupos.map((grupo, i) => (
-              <CartaoRespondente
-                key={grupo.respondente.id}
-                grupo={grupo}
-                indice={i + 1}
-                identificar={identificar}
-              />
-            ))}
-          </div>
+          {visao === 'pessoa' ? (
+            <div className="space-y-8">
+              {grupos.map((grupo, i) => (
+                <CartaoRespondente
+                  key={grupo.respondente.id}
+                  grupo={grupo}
+                  indice={i + 1}
+                  identificar={identificar}
+                />
+              ))}
+            </div>
+          ) : (
+            <MatrizPorPergunta grupos={grupos} identificar={identificar} />
+          )}
         </Estado>
       </div>
+    </div>
+  )
+}
+
+/**
+ * Uma linha por pergunta, uma coluna por pessoa.
+ *
+ * É a leitura que a amostra pequena pede: sócio marcando 5 e quem executa
+ * marcando 1 na mesma frase é o achado, e ele desaparece quando cada pessoa
+ * está numa seção diferente da página.
+ */
+function MatrizPorPergunta({
+  grupos,
+  identificar,
+}: {
+  grupos: GrupoRespondente[]
+  identificar: boolean
+}) {
+  const [soDivergentes, setSoDivergentes] = useState(false)
+
+  const linhas = useMemo(() => cruzarPorPergunta(grupos), [grupos])
+  const visiveis = soDivergentes ? linhas.filter((l) => l.divergente) : linhas
+  const totalDivergentes = linhas.filter((l) => l.divergente).length
+
+  return (
+    <div>
+      <label className="mb-4 flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={soDivergentes}
+          onChange={(e) => setSoDivergentes(e.target.checked)}
+          className="accent-accent size-4"
+        />
+        Mostrar só onde há divergência
+        <span className="text-sem-dado">
+          ({totalDivergentes} de {linhas.length})
+        </span>
+      </label>
+
+      {visiveis.length === 0 ? (
+        <Painel>
+          <p className="text-sem-dado text-sm">
+            {soDivergentes
+              ? 'Nenhuma pergunta com divergência relevante entre quem respondeu.'
+              : 'Ninguém respondeu nada ainda.'}
+          </p>
+        </Painel>
+      ) : (
+        <div className="border-border overflow-x-auto border bg-white">
+          <table className="w-full min-w-[720px] border-collapse text-sm">
+            <thead>
+              <tr className="border-border border-b">
+                <th className="text-sem-dado p-3 text-left font-normal">Pergunta</th>
+                {grupos.map((g, i) => (
+                  <th key={g.respondente.id} className="p-3 text-left font-medium">
+                    {identificar && g.respondente.nome
+                      ? g.respondente.nome
+                      : `Resp. ${i + 1}`}
+                    <span className="text-sem-dado block text-xs font-normal">
+                      {g.respondente.vinculo ?? '—'}
+                    </span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {visiveis.map((linha) => (
+                <tr
+                  key={linha.pergunta.id}
+                  className={`border-border border-b last:border-0 ${
+                    linha.divergente ? 'bg-atencao/5' : ''
+                  }`}
+                >
+                  <td className="p-3 align-top">
+                    {linha.divergente && (
+                      <span
+                        aria-label="divergência"
+                        className="bg-atencao mr-2 inline-block size-2 align-middle"
+                      />
+                    )}
+                    <span className="text-sem-dado">{linha.pergunta.codigo}</span>{' '}
+                    {linha.pergunta.enunciado}
+                  </td>
+                  {linha.celulas.map((c, i) => (
+                    <td
+                      key={grupos[i].respondente.id}
+                      className={`p-3 align-top ${
+                        c === null
+                          ? 'text-sem-dado'
+                          : c.naoSei
+                            ? 'text-sem-dado italic'
+                            : c.naoExiste
+                              ? 'text-atencao font-medium'
+                              : ''
+                      }`}
+                    >
+                      {/* Traço para "não se aplica a esta pessoa" — nunca vazio,
+                          que se confundiria com "não respondeu". */}
+                      {c === null ? '—' : formatarValor(c)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

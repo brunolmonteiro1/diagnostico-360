@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  cruzarPorPergunta,
   montarTextoParaIa,
   agruparPorRespondente,
   type PerguntaExport,
@@ -191,6 +192,134 @@ describe('montarTextoParaIa — como cada tipo de resposta é escrito', () => {
     const texto = montarTextoParaIa(grupos, { incluirIdentificacao: false })
 
     expect(texto).toContain('Respondente 1')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Visão pergunta × pessoa
+//
+// Com 4 respondentes, divergência item a item é o achado — e ela não aparece
+// na visão agrupada por pessoa, que obriga a rolar de um lado para o outro.
+// ---------------------------------------------------------------------------
+
+describe('cruzarPorPergunta', () => {
+  const tres = [
+    respondente({ id: 'a', nome: 'João', vinculo: 'socio' }),
+    respondente({ id: 'b', nome: 'Larissa', vinculo: 'colaborador' }),
+    respondente({ id: 'c', nome: 'Kethelin', vinculo: 'colaborador' }),
+  ]
+
+  it('cria uma linha por pergunta, com uma célula por respondente na mesma ordem', () => {
+    const linhas = cruzarPorPergunta(
+      agruparPorRespondente(
+        tres,
+        [
+          resposta({ respondenteId: 'a', valorNum: 5 }),
+          resposta({ respondenteId: 'b', valorNum: 2 }),
+          resposta({ respondenteId: 'c', valorNum: 1 }),
+        ],
+        [pergunta()]
+      )
+    )
+
+    expect(linhas).toHaveLength(1)
+    expect(linhas[0].celulas.map((c) => c?.valorNum)).toEqual([5, 2, 1])
+  })
+
+  it('deixa a célula nula para quem não recebeu aquela pergunta', () => {
+    // Colaborador não vê o bloco de liderança: a lacuna é "não se aplica",
+    // não "não respondeu", e a coluna precisa continuar alinhada.
+    const linhas = cruzarPorPergunta(
+      agruparPorRespondente(
+        tres,
+        [resposta({ respondenteId: 'a', perguntaId: 'lid', valorNum: 4 })],
+        [pergunta({ id: 'lid', codigo: 'LID.01', bloco: 'lideranca' })]
+      )
+    )
+
+    expect(linhas[0].celulas[0]?.valorNum).toBe(4)
+    expect(linhas[0].celulas[1]).toBeNull()
+    expect(linhas[0].celulas[2]).toBeNull()
+  })
+
+  it('marca divergência quando os extremos das notas ficam longe', () => {
+    const linhas = cruzarPorPergunta(
+      agruparPorRespondente(
+        tres,
+        [
+          resposta({ respondenteId: 'a', valorNum: 5 }),
+          resposta({ respondenteId: 'b', valorNum: 1 }),
+          resposta({ respondenteId: 'c', valorNum: 2 }),
+        ],
+        [pergunta()]
+      )
+    )
+
+    expect(linhas[0].divergente).toBe(true)
+  })
+
+  it('não marca divergência quando todos respondem parecido', () => {
+    const linhas = cruzarPorPergunta(
+      agruparPorRespondente(
+        tres,
+        [
+          resposta({ respondenteId: 'a', valorNum: 4 }),
+          resposta({ respondenteId: 'b', valorNum: 5 }),
+          resposta({ respondenteId: 'c', valorNum: 4 }),
+        ],
+        [pergunta()]
+      )
+    )
+
+    expect(linhas[0].divergente).toBe(false)
+  })
+
+  it('não inventa divergência a partir de "não sei"', () => {
+    // "Não sei" não é zero. Se contasse como nota, quem não tem visibilidade
+    // apareceria como quem discorda — que é o erro central que o produto evita.
+    const linhas = cruzarPorPergunta(
+      agruparPorRespondente(
+        tres,
+        [
+          resposta({ respondenteId: 'a', valorNum: 5 }),
+          resposta({ respondenteId: 'b', naoSei: true, valorNum: null }),
+          resposta({ respondenteId: 'c', valorNum: 5 }),
+        ],
+        [pergunta()]
+      )
+    )
+
+    expect(linhas[0].divergente).toBe(false)
+  })
+
+  it('precisa de ao menos duas notas para falar em divergência', () => {
+    const linhas = cruzarPorPergunta(
+      agruparPorRespondente(
+        tres,
+        [resposta({ respondenteId: 'a', valorNum: 5 })],
+        [pergunta()]
+      )
+    )
+
+    expect(linhas[0].divergente).toBe(false)
+  })
+
+  it('ordena as perguntas pela ordem do questionário', () => {
+    const linhas = cruzarPorPergunta(
+      agruparPorRespondente(
+        tres,
+        [
+          resposta({ respondenteId: 'a', perguntaId: 'p2' }),
+          resposta({ respondenteId: 'a', perguntaId: 'p1' }),
+        ],
+        [
+          pergunta({ id: 'p1', codigo: 'D1.01', ordem: 101 }),
+          pergunta({ id: 'p2', codigo: 'D2.01', ordem: 205 }),
+        ]
+      )
+    )
+
+    expect(linhas.map((l) => l.pergunta.codigo)).toEqual(['D1.01', 'D2.01'])
   })
 })
 

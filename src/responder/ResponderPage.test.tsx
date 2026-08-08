@@ -98,16 +98,46 @@ describe('ResponderPage', () => {
       })
     ).toBeInTheDocument()
 
-    // As três promessas da abertura são o contrato do produto com quem responde.
+    // As promessas da abertura são o contrato do produto com quem responde.
     expect(
       screen.getByText(/Saber que uma informação não está disponível para você é tão útil/)
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/Suas respostas individuais não serão mostradas para a empresa/)
+      screen.getByText(/Suas respostas vão para a consultoria externa, não para a direção/)
     ).toBeInTheDocument()
     expect(
       screen.getByText(/O que atrapalha o trabalho aqui é resposta bonita, não resposta ruim/)
     ).toBeInTheDocument()
+  })
+
+  it('não promete agregação — promessa que equipe pequena não permite cumprir', async () => {
+    // A abertura prometia que "o relatório à direção apresenta os dados de forma
+    // agregada". Numa equipe de 4 pessoas não há o que agregar: todo recorte é
+    // suprimido e qualquer número aponta para um indivíduo. A promessa que se
+    // cumpre é outra — as respostas param no consultor —, e este teste existe
+    // para a antiga não voltar por descuido.
+    vi.mocked(iniciar).mockResolvedValue(inicio([pergunta({})]))
+    montar()
+
+    await screen.findByRole('button', { name: 'Começar' })
+
+    expect(screen.queryByText(/de forma agregada/)).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/respostas individuais não serão mostradas/)
+    ).not.toBeInTheDocument()
+  })
+
+  it('só pede autoavaliação franca a quem decide', async () => {
+    // Pedir a um subordinado que avalie "os limites da própria gestão" não faz
+    // sentido, e a versão coercitiva desse pedido ("não amenize para proteger
+    // pessoas") transferiria a ele um risco que não é dele.
+    vi.mocked(iniciar).mockResolvedValue(inicio([pergunta({})]))
+    montar()
+
+    await screen.findByRole('button', { name: 'Começar' })
+
+    // Sem vínculo respondido ainda, o bloco de autoavaliação não aparece.
+    expect(screen.queryByText(/avalie a própria gestão/)).not.toBeInTheDocument()
   })
 
   it('mostra tela amigável, e não erro, para token inválido', async () => {
