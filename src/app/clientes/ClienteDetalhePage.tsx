@@ -1,13 +1,14 @@
 import { useCallback, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Estado, Painel, Secao } from '@/components/shared/Secao'
 import { useConsulta } from '@/hooks/useConsulta'
-import { criarRodada, listarRodadas, obterCliente } from '@/lib/api'
+import { criarRodada, excluirCliente, listarRodadas, obterCliente } from '@/lib/api'
 import { rotuloStatus } from '@/domain/rodada-status'
+import { BotaoExcluir } from '@/components/shared/BotaoExcluir'
 
 const schema = z.object({
   titulo: z.string().min(1, 'Dê um título à rodada'),
@@ -20,6 +21,7 @@ const campo =
 
 export function ClienteDetalhePage() {
   const { clienteId = '' } = useParams()
+  const navegar = useNavigate()
   const [criando, setCriando] = useState(false)
   const [erroForm, setErroForm] = useState<string | null>(null)
 
@@ -142,6 +144,27 @@ export function ClienteDetalhePage() {
           ))}
         </ul>
       </Estado>
+
+      {/* ---------------------------------------------------------- */}
+      <div className="border-border mt-16 border-t pt-8">
+        <h2 className="font-heading mb-2 text-xl">Zona de risco</h2>
+        <p className="text-sem-dado mb-4 max-w-xl text-sm">
+          Útil para limpar um cliente criado só para teste.
+        </p>
+        <BotaoExcluir
+          rotulo="Excluir este cliente"
+          o_que={`o cliente "${cliente.dados?.nome_fantasia ?? ''}"`}
+          cascata={[
+            `${rodadas.dados?.length ?? 0} rodada(s) deste cliente`,
+            'todos os convites, respondentes e respostas dessas rodadas',
+            'todos os relatórios já gerados',
+          ]}
+          onConfirmar={async () => {
+            await excluirCliente(clienteId)
+            navegar('/app/clientes')
+          }}
+        />
+      </div>
     </>
   )
 }

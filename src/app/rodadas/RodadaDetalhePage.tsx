@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Estado, Painel, Secao } from '@/components/shared/Secao'
 import { useConsulta } from '@/hooks/useConsulta'
@@ -7,12 +7,14 @@ import {
   atualizarRodada,
   criarConvites,
   excluirConvite,
+  excluirRodada,
   listarConvites,
   listarModulosDeArea,
   listarRespondentes,
   obterRodada,
 } from '@/lib/api'
 import { Cobertura } from '@/components/shared/Cobertura'
+import { BotaoExcluir } from '@/components/shared/BotaoExcluir'
 import { calcularCobertura } from '@/domain/cobertura'
 import {
   impedimentosParaAbrir,
@@ -32,6 +34,7 @@ const campo =
 
 export function RodadaDetalhePage() {
   const { rodadaId = '' } = useParams()
+  const navegar = useNavigate()
   const [erroAcao, setErroAcao] = useState<string | null>(null)
   const [texto, setTexto] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -450,6 +453,28 @@ export function RodadaDetalhePage() {
             O link só vai abrir de verdade quando o formulário do respondente
             existir (Fase 4). O token já é definitivo: é a credencial da pessoa.
           </p>
+
+          {/* ---------------------------------------------------------- */}
+          <div className="border-border mt-16 border-t pt-8">
+            <h2 className="font-heading mb-2 text-xl">Zona de risco</h2>
+            <p className="text-sem-dado mb-4 max-w-xl text-sm">
+              Útil para zerar uma rodada de teste. Apagar aqui não mexe no
+              cliente nem no catálogo de perguntas.
+            </p>
+            <BotaoExcluir
+              rotulo="Excluir esta rodada"
+              o_que={`a rodada "${dados.titulo}"`}
+              cascata={[
+                `${convites.dados?.length ?? 0} convite(s), com os links já enviados`,
+                `${respondentes.dados?.length ?? 0} respondente(s) e todas as respostas`,
+                'os relatórios já gerados desta rodada',
+              ]}
+              onConfirmar={async () => {
+                await excluirRodada(dados.id)
+                navegar(`/app/clientes/${dados.cliente_id}`)
+              }}
+            />
+          </div>
         </>
       )}
     </Estado>

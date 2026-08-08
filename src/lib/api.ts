@@ -131,6 +131,16 @@ export async function criarRodada(dados: NovaRodada): Promise<Rodada> {
   return data
 }
 
+/**
+ * Apaga a rodada e, por cascata do schema, seus convites, respondentes,
+ * respostas e relatórios. É a forma de zerar uma rodada de teste sem tocar no
+ * cliente nem no catálogo de perguntas.
+ */
+export async function excluirRodada(id: string): Promise<void> {
+  const { error } = await supabase.from('rodadas').delete().eq('id', id)
+  if (error) erro('Não foi possível excluir a rodada', error)
+}
+
 export async function atualizarRodada(
   id: string,
   dados: Partial<Omit<NovaRodada, 'cliente_id'>> & {
