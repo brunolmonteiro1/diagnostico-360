@@ -189,12 +189,20 @@ export function RodadaDetalhePage() {
             <>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="font-heading text-xl">Acompanhamento</h2>
-                <Link
-                  to={`/app/rodadas/${rodadaId}/relatorio`}
-                  className="text-sem-dado text-sm underline underline-offset-4"
-                >
-                  Ver relatório →
-                </Link>
+                <div className="flex items-center gap-4">
+                  <Link
+                    to={`/app/rodadas/${rodadaId}/respostas`}
+                    className="text-sem-dado text-sm underline underline-offset-4"
+                  >
+                    Ver respostas →
+                  </Link>
+                  <Link
+                    to={`/app/rodadas/${rodadaId}/relatorio`}
+                    className="text-sem-dado text-sm underline underline-offset-4"
+                  >
+                    Ver relatório →
+                  </Link>
+                </div>
               </div>
               <div className="mb-12">
                 <Estado carregando={respondentes.carregando} erro={respondentes.erro}>

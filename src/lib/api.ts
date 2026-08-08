@@ -255,6 +255,45 @@ export async function listarRespondentes(rodadaId: string): Promise<Respondente[
 }
 
 // --------------------------------------------------------------------------
+// Respostas cruas (leitura do consultor)
+// --------------------------------------------------------------------------
+
+/**
+ * Tudo que é preciso para ler as respostas de uma rodada. Três consultas em
+ * vez de um join porque o client do Supabase não expõe join de tabela sem
+ * relação declarada — e porque a RLS avalia cada tabela por si de qualquer
+ * forma (a de `respostas` desce até o dono via `owns_respondente`).
+ */
+export async function listarRespostasDaRodada(rodadaId: string): Promise<{
+  respondentes: Respondente[]
+  respostas: Tabelas['respostas']['Row'][]
+  perguntas: Pergunta[]
+}> {
+  const respondentes = await listarRespondentes(rodadaId)
+
+  const { data: perguntas, error: erroPerguntas } = await supabase
+    .from('perguntas')
+    .select('*')
+    .order('ordem')
+
+  if (erroPerguntas) erro('Não foi possível carregar as perguntas', erroPerguntas)
+
+  if (respondentes.length === 0) return { respondentes, respostas: [], perguntas }
+
+  const { data: respostas, error: erroRespostas } = await supabase
+    .from('respostas')
+    .select('*')
+    .in(
+      'respondente_id',
+      respondentes.map((r) => r.id)
+    )
+
+  if (erroRespostas) erro('Não foi possível carregar as respostas', erroRespostas)
+
+  return { respondentes, respostas, perguntas }
+}
+
+// --------------------------------------------------------------------------
 // Relatório (Fase 6)
 // --------------------------------------------------------------------------
 

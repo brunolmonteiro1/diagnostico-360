@@ -5,6 +5,7 @@ import { ClientesPage } from './app/clientes/ClientesPage'
 import { ClienteDetalhePage } from './app/clientes/ClienteDetalhePage'
 import { RodadaDetalhePage } from './app/rodadas/RodadaDetalhePage'
 import { RelatorioPage } from './app/rodadas/RelatorioPage'
+import { RespostasPage } from './app/rodadas/RespostasPage'
 import { RelatorioPrintPage } from './app/relatorio/RelatorioPrintPage'
 import { PerguntasPage } from './app/perguntas/PerguntasPage'
 import { LoginPage } from './app/auth/LoginPage'
@@ -34,6 +35,7 @@ export function AppRoutes() {
           <Route path="clientes/:clienteId" element={<ClienteDetalhePage />} />
           <Route path="rodadas/:rodadaId" element={<RodadaDetalhePage />} />
           <Route path="rodadas/:rodadaId/relatorio" element={<RelatorioPage />} />
+          <Route path="rodadas/:rodadaId/respostas" element={<RespostasPage />} />
           <Route path="perguntas" element={<PerguntasPage />} />
         </Route>
 
