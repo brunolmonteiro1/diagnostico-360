@@ -47,6 +47,7 @@ export function RespostasPage() {
         respondenteId: r.respondente_id,
         perguntaId: r.pergunta_id,
         naoSei: r.nao_sei,
+        naoExiste: r.nao_existe,
         valorNum: r.valor_num === null ? null : Number(r.valor_num),
         valorTexto: r.valor_texto,
         valorOpcoes: r.valor_opcoes,
@@ -228,7 +229,11 @@ function CartaoRespondente({
                 </dt>
                 <dd
                   className={`text-sm sm:text-right ${
-                    r.naoSei ? 'text-sem-dado italic' : 'font-medium'
+                    r.naoSei
+                      ? 'text-sem-dado italic'
+                      : r.naoExiste
+                        ? 'text-atencao font-medium'
+                        : 'font-medium'
                   }`}
                 >
                   {formatarValor(r)}

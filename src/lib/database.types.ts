@@ -123,6 +123,7 @@ export type Database = {
           opcoes: Json | null
           ordem: number
           permite_nao_sei: boolean
+          permite_nao_existe: boolean
           peso: number
           tipo: Database["public"]["Enums"]["pergunta_tipo"]
           vinculo_scope: string[]
@@ -141,6 +142,7 @@ export type Database = {
           opcoes?: Json | null
           ordem?: number
           permite_nao_sei?: boolean
+          permite_nao_existe?: boolean
           peso?: number
           tipo: Database["public"]["Enums"]["pergunta_tipo"]
           vinculo_scope?: string[]
@@ -159,6 +161,7 @@ export type Database = {
           opcoes?: Json | null
           ordem?: number
           permite_nao_sei?: boolean
+          permite_nao_existe?: boolean
           peso?: number
           tipo?: Database["public"]["Enums"]["pergunta_tipo"]
           vinculo_scope?: string[]
@@ -322,6 +325,7 @@ export type Database = {
         Row: {
           id: string
           nao_sei: boolean
+          nao_existe: boolean
           pergunta_id: string
           respondente_id: string
           respondido_em: string
@@ -332,6 +336,7 @@ export type Database = {
         Insert: {
           id?: string
           nao_sei?: boolean
+          nao_existe?: boolean
           pergunta_id: string
           respondente_id: string
           respondido_em?: string
@@ -342,6 +347,7 @@ export type Database = {
         Update: {
           id?: string
           nao_sei?: boolean
+          nao_existe?: boolean
           pergunta_id?: string
           respondente_id?: string
           respondido_em?: string

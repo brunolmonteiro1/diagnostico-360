@@ -70,6 +70,7 @@ export function ResponderPage() {
         if (!pergunta) continue
         iniciais[pergunta.codigo] = {
           naoSei: resposta.nao_sei,
+          naoExiste: resposta.nao_existe,
           valorNum: resposta.valor_num,
           valorTexto: resposta.valor_texto,
           valorOpcoes: resposta.valor_opcoes,
@@ -123,6 +124,7 @@ export function ResponderPage() {
       paraDominio,
       {
         areaPrincipal: (perfil.area_principal as string | null) ?? null,
+        areasSecundarias: (perfil.areas_secundarias as string[] | null) ?? [],
         vinculo: (perfil.vinculo as string | null) ?? null,
       },
       respostasParaRoteamento,
@@ -150,6 +152,9 @@ export function ResponderPage() {
       if (!valor) continue
       if (
         valor.naoSei ||
+        // "Não existe" é resposta: sem isto a barra de progresso trava em quem
+        // respondeu tudo marcando ausência de processo.
+        valor.naoExiste ||
         valor.valorNum !== null ||
         (valor.valorTexto !== null && valor.valorTexto !== '') ||
         (valor.valorOpcoes !== null && valor.valorOpcoes.length > 0)
@@ -195,6 +200,7 @@ export function ResponderPage() {
         : await salvarResposta(token, {
             pergunta_id: pergunta.id,
             nao_sei: valor.naoSei,
+            nao_existe: valor.naoExiste,
             valor_num: valor.valorNum,
             valor_texto: valor.valorTexto,
             valor_opcoes: valor.valorOpcoes,

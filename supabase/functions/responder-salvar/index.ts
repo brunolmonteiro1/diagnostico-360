@@ -76,17 +76,23 @@ Deno.serve(async (req) => {
     if (typeof perguntaId !== 'string') return recusa('requisicao_invalida')
 
     const naoSei = corpo.nao_sei === true
+    // Mutuamente exclusivas: "não sei" ganha se as duas vierem marcadas, porque
+    // é a mais conservadora — não afirma nada sobre a empresa.
+    const naoExiste = !naoSei && corpo.nao_existe === true
+    const marcado = naoSei || naoExiste
 
-    // "Não sei" limpa os três campos de valor. A constraint chk_nao_sei recusa
-    // a linha de qualquer jeito, mas limpar aqui evita depender da mensagem de
-    // erro do banco para uma situação que é normal e esperada.
+    // Qualquer das duas marcações limpa os três campos de valor. A constraint
+    // chk_sem_valor_quando_marcado recusa a linha de qualquer jeito, mas limpar
+    // aqui evita depender da mensagem de erro do banco para uma situação que é
+    // normal e esperada.
     const linha = {
       respondente_id: respondente.id,
       pergunta_id: perguntaId,
       nao_sei: naoSei,
-      valor_num: naoSei ? null : normalizarNumero(corpo.valor_num),
-      valor_texto: naoSei ? null : normalizarTexto(corpo.valor_texto),
-      valor_opcoes: naoSei ? null : normalizarOpcoes(corpo.valor_opcoes),
+      nao_existe: naoExiste,
+      valor_num: marcado ? null : normalizarNumero(corpo.valor_num),
+      valor_texto: marcado ? null : normalizarTexto(corpo.valor_texto),
+      valor_opcoes: marcado ? null : normalizarOpcoes(corpo.valor_opcoes),
       respondido_em: new Date().toISOString(),
     }
 

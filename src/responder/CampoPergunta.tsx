@@ -13,6 +13,7 @@ import type { PerguntaServidor } from './api'
 
 export type ValorResposta = {
   naoSei: boolean
+  naoExiste: boolean
   valorNum: number | null
   valorTexto: string | null
   valorOpcoes: string[] | null
@@ -20,6 +21,7 @@ export type ValorResposta = {
 
 export const VAZIO: ValorResposta = {
   naoSei: false,
+  naoExiste: false,
   valorNum: null,
   valorTexto: null,
   valorOpcoes: null,
@@ -61,16 +63,20 @@ export function CampoPergunta({
   valor: ValorResposta
   aoMudar: (novo: ValorResposta) => void
 }) {
-  const desabilitado = valor.naoSei
+  const desabilitado = valor.naoSei || valor.naoExiste
 
   function escolherNumero(n: number) {
     aoMudar({ ...VAZIO, valorNum: n })
   }
 
   function alternarNaoSei() {
-    // Marcar "não sei" limpa os três campos de valor: não dá para ter as duas
-    // coisas, e a constraint no banco recusaria de qualquer forma.
+    // Marcar "não sei" limpa os campos de valor e a outra marcação: não dá para
+    // ter as duas coisas, e a constraint no banco recusaria de qualquer forma.
     aoMudar(valor.naoSei ? VAZIO : { ...VAZIO, naoSei: true })
+  }
+
+  function alternarNaoExiste() {
+    aoMudar(valor.naoExiste ? VAZIO : { ...VAZIO, naoExiste: true })
   }
 
   const escala =
@@ -228,27 +234,55 @@ export function CampoPergunta({
         )}
       </div>
 
-      {pergunta.permite_nao_sei && (
+      {(pergunta.permite_nao_sei || pergunta.permite_nao_existe) && (
         <>
           <hr className="border-border mt-5" />
-          <button
-            type="button"
-            aria-pressed={valor.naoSei}
-            onClick={alternarNaoSei}
-            className={`mt-3 flex min-h-11 w-full items-center gap-3 border px-3 py-2 text-left text-sm ${
-              valor.naoSei
-                ? 'border-sem-dado bg-sem-dado/10 text-foreground'
-                : 'border-transparent text-sem-dado hover:border-sem-dado/40'
-            }`}
-          >
-            <span
-              aria-hidden
-              className={`size-4 shrink-0 border ${
-                valor.naoSei ? 'border-sem-dado bg-sem-dado' : 'border-sem-dado'
+
+          {pergunta.permite_nao_sei && (
+            <button
+              type="button"
+              aria-pressed={valor.naoSei}
+              onClick={alternarNaoSei}
+              className={`mt-3 flex min-h-11 w-full items-center gap-3 border px-3 py-2 text-left text-sm ${
+                valor.naoSei
+                  ? 'border-sem-dado bg-sem-dado/10 text-foreground'
+                  : 'border-transparent text-sem-dado hover:border-sem-dado/40'
               }`}
-            />
-            Não sei / Não tenho visibilidade sobre isso
-          </button>
+            >
+              <span
+                aria-hidden
+                className={`size-4 shrink-0 border ${
+                  valor.naoSei ? 'border-sem-dado bg-sem-dado' : 'border-sem-dado'
+                }`}
+              />
+              Não sei / Não tenho visibilidade sobre isso
+            </button>
+          )}
+
+          {/* Fica junto do "não sei" — fora da escala, abaixo da linha — pelo
+              mesmo motivo: se parecer um ponto da régua, vira "mais ou menos".
+              Mas em âmbar, não em cinza, porque as duas dizem coisas opostas:
+              esta É uma resposta, e uma resposta ruim. */}
+          {pergunta.permite_nao_existe && (
+            <button
+              type="button"
+              aria-pressed={valor.naoExiste}
+              onClick={alternarNaoExiste}
+              className={`mt-2 flex min-h-11 w-full items-center gap-3 border px-3 py-2 text-left text-sm ${
+                valor.naoExiste
+                  ? 'border-atencao bg-atencao/10 text-foreground'
+                  : 'border-transparent text-sem-dado hover:border-atencao/40'
+              }`}
+            >
+              <span
+                aria-hidden
+                className={`size-4 shrink-0 border ${
+                  valor.naoExiste ? 'border-atencao bg-atencao' : 'border-atencao/60'
+                }`}
+              />
+              Não existe atualmente na empresa
+            </button>
+          )}
         </>
       )}
     </fieldset>

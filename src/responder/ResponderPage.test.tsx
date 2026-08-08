@@ -34,6 +34,7 @@ const pergunta = (over: Partial<PerguntaServidor>): PerguntaServidor => ({
   tipo: 'likert5',
   opcoes: null,
   permite_nao_sei: true,
+  permite_nao_existe: false,
   obrigatoria: true,
   ...over,
 })
@@ -162,6 +163,7 @@ describe('ResponderPage', () => {
     expect(salvarResposta).toHaveBeenCalledWith('abc123', {
       pergunta_id: 'id-D1.01',
       nao_sei: true,
+      nao_existe: false,
       valor_num: null,
       valor_texto: null,
       valor_opcoes: null,

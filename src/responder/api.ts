@@ -43,12 +43,14 @@ export type PerguntaServidor = {
     | 'numero'
   opcoes: { valor: string | number; rotulo: string }[] | null
   permite_nao_sei: boolean
+  permite_nao_existe: boolean
   obrigatoria: boolean
 }
 
 export type RespostaServidor = {
   pergunta_id: string
   nao_sei: boolean
+  nao_existe: boolean
   valor_num: number | null
   valor_texto: string | null
   valor_opcoes: string[] | null
@@ -116,6 +118,7 @@ export function salvarResposta(
   entrada: {
     pergunta_id: string
     nao_sei?: boolean
+    nao_existe?: boolean
     valor_num?: number | null
     valor_texto?: string | null
     valor_opcoes?: string[] | null

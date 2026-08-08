@@ -15,6 +15,7 @@ const item = (p: Partial<Item> = {}): Item => ({
   peso: 1,
   invertida: false,
   naoSei: false,
+  naoExiste: false,
   valor: 3,
   ...p,
 })
@@ -47,6 +48,79 @@ describe('normalizarItem', () => {
 
   it('não pontua pergunta sem resposta', () => {
     expect(normalizarItem(item({ valor: null }))).toBeNull()
+  })
+
+  it('pontua "não existe atualmente" no piso da escala', () => {
+    // "Sei que não temos DRE" é achado, não falta de dado: vale 0 e ENTRA na
+    // conta. Tratar como "não sei" esconderia o problema justamente na empresa
+    // onde ele é mais grave.
+    expect(normalizarItem(item({ naoExiste: true, valor: null }))).toBe(0)
+  })
+
+  it('"não existe" ignora a inversão da pergunta', () => {
+    // Inverter faz sentido para "com que frequência você refaz trabalho" — não
+    // para a ausência do processo. Processo inexistente é o pior caso nos dois
+    // sentidos; espelhar daria 100 para quem não tem nada.
+    expect(normalizarItem(item({ naoExiste: true, valor: null, invertida: true }))).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regra dura — "não existe" é resposta, "não sei" é ausência
+//
+// A distinção que separa as duas: quem responde "não existe" TEM visibilidade
+// sobre o tema (sabe que não há processo). Só o "não sei" derruba a
+// visibilidade.
+// ---------------------------------------------------------------------------
+
+describe('"não existe atualmente" vs "não sei"', () => {
+  it('"não existe" conta como item válido e não derruba a visibilidade', () => {
+    const r = recorte([
+      item({ naoExiste: true, valor: null }),
+      item({ codigo: 'D1.02', valor: 5 }),
+    ])
+
+    expect(r.visibilidade).toBe(100)
+    expect(r.itensValidos).toBe(2)
+  })
+
+  it('"não sei" continua derrubando a visibilidade', () => {
+    const r = recorte([
+      item({ naoSei: true, valor: null }),
+      item({ codigo: 'D1.02', valor: 5 }),
+    ])
+
+    expect(r.visibilidade).toBe(50)
+    expect(r.itensValidos).toBe(1)
+  })
+
+  it('"não existe" puxa a maturidade para baixo; "não sei" apenas some da conta', () => {
+    const comNaoExiste = recorte([
+      item({ naoExiste: true, valor: null }),
+      item({ codigo: 'D1.02', valor: 5 }),
+    ])
+    const comNaoSei = recorte([
+      item({ naoSei: true, valor: null }),
+      item({ codigo: 'D1.02', valor: 5 }),
+    ])
+
+    // média(0, 100) = 50 contra média(100) = 100
+    expect(comNaoExiste.maturidade).toBe(50)
+    expect(comNaoSei.maturidade).toBe(100)
+  })
+
+  it('recorte inteiro de "não existe" dá maturidade 0 com visibilidade cheia', () => {
+    // O retrato de uma área sem processo nenhum: a empresa sabe exatamente o
+    // que não tem. Visibilidade alta, maturidade no chão — e é verdade.
+    const r = recorte([
+      item({ naoExiste: true, valor: null }),
+      item({ codigo: 'D1.02', naoExiste: true, valor: null }),
+      item({ codigo: 'D1.03', naoExiste: true, valor: null }),
+    ])
+
+    expect(r.visibilidade).toBe(100)
+    expect(r.maturidade).toBe(0)
+    expect(r.confiavel).toBe(true)
   })
 })
 

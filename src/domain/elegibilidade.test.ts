@@ -18,6 +18,7 @@ const p = (over: Partial<PerguntaElegivel>): PerguntaElegivel => ({
 
 const perfil = (over: Partial<Perfil> = {}): Perfil => ({
   areaPrincipal: 'financeiro',
+  areasSecundarias: [],
   vinculo: 'colaborador',
   ...over,
 })
@@ -186,6 +187,133 @@ describe('follow-ups condicionais', () => {
     expect(
       aplicavel(p({ codigo: 'FIN.04' }), perfil(), { 'FIN.03': { valor: 2, naoSei: false } })
     ).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Áreas secundárias (ID.05) no roteamento
+//
+// Sócio que também opera responde mais de um bloco de área. Sem isto, quem
+// acumula funções só consegue falar de uma delas — e numa empresa de 4 pessoas
+// é a regra, não a exceção.
+// ---------------------------------------------------------------------------
+
+describe('áreas secundárias', () => {
+  const perguntaFinanceiro = p({ codigo: 'FIN.01', bloco: 'area', areaScope: ['financeiro'] })
+  const perguntaComercial = p({ codigo: 'COM.01', bloco: 'area', areaScope: ['comercial'] })
+
+  it('entrega o bloco de uma área marcada como secundária', () => {
+    const socioQueVende = perfil({
+      areaPrincipal: 'financeiro',
+      areasSecundarias: ['comercial'],
+    })
+
+    expect(aplicavel(perguntaComercial, socioQueVende)).toBe(true)
+  })
+
+  it('continua entregando o bloco da área principal', () => {
+    const socioQueVende = perfil({
+      areaPrincipal: 'financeiro',
+      areasSecundarias: ['comercial'],
+    })
+
+    expect(aplicavel(perguntaFinanceiro, socioQueVende)).toBe(true)
+  })
+
+  it('não entrega bloco de área que a pessoa não marcou em lugar nenhum', () => {
+    const socioQueVende = perfil({
+      areaPrincipal: 'financeiro',
+      areasSecundarias: ['comercial'],
+    })
+
+    expect(
+      aplicavel(p({ codigo: 'TI.01', bloco: 'area', areaScope: ['ti'] }), socioQueVende)
+    ).toBe(false)
+  })
+
+  it('respeita o módulo desligado na rodada, mesmo vindo de área secundária', () => {
+    // O módulo continua sendo a palavra final: marcar a área não fura a
+    // configuração da rodada.
+    const socioQueVende = perfil({
+      areaPrincipal: 'financeiro',
+      areasSecundarias: ['comercial'],
+    })
+
+    expect(aplicavel(perguntaComercial, socioQueVende, {}, ['financeiro'])).toBe(false)
+  })
+
+  it('funciona com várias secundárias ao mesmo tempo', () => {
+    const socioOperador = perfil({
+      areaPrincipal: 'diretoria',
+      areasSecundarias: ['comercial', 'financeiro', 'operacional'],
+    })
+
+    expect(aplicavel(perguntaComercial, socioOperador)).toBe(true)
+    expect(aplicavel(perguntaFinanceiro, socioOperador)).toBe(true)
+    expect(
+      aplicavel(
+        p({ codigo: 'OPE.01', bloco: 'area', areaScope: ['operacional'] }),
+        socioOperador
+      )
+    ).toBe(true)
+  })
+
+  it('lista vazia se comporta como antes — ninguém ganha bloco novo', () => {
+    const soFinanceiro = perfil({ areaPrincipal: 'financeiro', areasSecundarias: [] })
+
+    expect(aplicavel(perguntaFinanceiro, soFinanceiro)).toBe(true)
+    expect(aplicavel(perguntaComercial, soFinanceiro)).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Justificativa disparada por nota baixa
+//
+// O inverso do follow-up positivo: quando a pessoa aponta um problema, o
+// sistema pede o exemplo concreto na hora — que é quando ela ainda tem o caso
+// na cabeça.
+// ---------------------------------------------------------------------------
+
+describe('justificativa por nota baixa', () => {
+  it('aparece quando a âncora vem baixa', () => {
+    expect(
+      aplicavel(p({ codigo: 'D2.04.J' }), perfil(), { 'D2.04': { valor: 2, naoSei: false } })
+    ).toBe(true)
+  })
+
+  it('não aparece quando a âncora vem alta', () => {
+    expect(
+      aplicavel(p({ codigo: 'D2.04.J' }), perfil(), { 'D2.04': { valor: 5, naoSei: false } })
+    ).toBe(false)
+  })
+
+  it('não aparece antes de a âncora ser respondida', () => {
+    expect(aplicavel(p({ codigo: 'D2.04.J' }), perfil(), {})).toBe(false)
+  })
+
+  it('não aparece quando a âncora foi "não sei"', () => {
+    // Quem não tem visibilidade sobre o tema não tem exemplo concreto para dar
+    // — cobrar justificativa aqui produziria texto inventado.
+    expect(
+      aplicavel(p({ codigo: 'D2.04.J' }), perfil(), {
+        'D2.04': { valor: null, naoSei: true },
+      })
+    ).toBe(false)
+  })
+
+  it('vale para os gatilhos de liderança e de área também', () => {
+    expect(
+      aplicavel(p({ codigo: 'LID.11.J' }), perfil({ vinculo: 'socio' }), {
+        'LID.11': { valor: 1, naoSei: false },
+      })
+    ).toBe(true)
+    expect(
+      aplicavel(p({ codigo: 'OPE.07.J' }), perfil(), { 'OPE.07': { valor: 2, naoSei: false } })
+    ).toBe(true)
+  })
+
+  it('pergunta sem gatilho declarado continua aparecendo normalmente', () => {
+    expect(aplicavel(p({ codigo: 'D1.01' }), perfil(), {})).toBe(true)
   })
 })
 

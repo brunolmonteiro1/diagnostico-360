@@ -34,6 +34,7 @@ const resposta = (over: Partial<RespostaExport> = {}): RespostaExport => ({
   respondenteId: 'r1',
   perguntaId: 'p1',
   naoSei: false,
+  naoExiste: false,
   valorNum: 4,
   valorTexto: null,
   valorOpcoes: null,

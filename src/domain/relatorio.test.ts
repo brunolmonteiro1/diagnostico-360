@@ -17,6 +17,7 @@ const item = (
   peso: 1,
   invertida: false,
   naoSei: false,
+  naoExiste: false,
   valor: 4,
   ...over,
 })

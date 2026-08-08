@@ -62,13 +62,13 @@ Deno.serve(async (req) => {
       cliente
         .from('perguntas')
         .select(
-          'id, codigo, bloco, dimensao, area_scope, vinculo_scope, ordem, enunciado, ajuda, tipo, opcoes, permite_nao_sei, obrigatoria'
+          'id, codigo, bloco, dimensao, area_scope, vinculo_scope, ordem, enunciado, ajuda, tipo, opcoes, permite_nao_sei, permite_nao_existe, obrigatoria'
         )
         .eq('ativa', true)
         .order('ordem'),
       cliente
         .from('respostas')
-        .select('pergunta_id, nao_sei, valor_num, valor_texto, valor_opcoes')
+        .select('pergunta_id, nao_sei, nao_existe, valor_num, valor_texto, valor_opcoes')
         .eq('respondente_id', respondente.id),
     ])
 

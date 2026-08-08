@@ -26,7 +26,15 @@ export type Item = {
   /** Concordar indica problema: o valor é espelhado antes de pontuar. */
   invertida: boolean
   naoSei: boolean
-  /** `null` quando não respondida ou quando é "não sei". */
+  /**
+   * "Não existe atualmente" — a pessoa SABE que o processo não existe.
+   *
+   * É o oposto de `naoSei`, apesar de as duas virem sem valor numérico: quem
+   * responde isto tem visibilidade sobre o tema. Por isso pontua (no piso) e
+   * conta como item válido, em vez de sair da conta.
+   */
+  naoExiste: boolean
+  /** `null` quando não respondida, "não sei" ou "não existe". */
   valor: number | null
 }
 
@@ -49,6 +57,11 @@ export type ResultadoRecorte = {
  * baixa.
  */
 export function normalizarItem(item: Item): number | null {
+  // Antes do teste de `valor`, porque "não existe" também vem sem número — mas
+  // é resposta, não ausência. Sem inversão: processo inexistente é o pior caso
+  // independente do sentido da pergunta, e espelhar daria 100 a quem não tem nada.
+  if (item.naoExiste) return 0
+
   if (item.naoSei || item.valor === null) return null
 
   const v = item.invertida ? 6 - item.valor : item.valor

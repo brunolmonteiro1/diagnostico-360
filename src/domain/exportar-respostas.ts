@@ -38,6 +38,7 @@ export type RespostaExport = {
   respondenteId: string
   perguntaId: string
   naoSei: boolean
+  naoExiste: boolean
   valorNum: number | null
   valorTexto: string | null
   valorOpcoes: string[] | null
@@ -81,6 +82,10 @@ export function formatarValor(r: RespostaComPergunta): string {
   // "Não sei" é resposta, não ausência — e nunca pode virar 0 ou vazio, senão
   // quem ler (humano ou IA) confunde com nota baixa.
   if (r.naoSei) return 'não sei'
+
+  // O oposto: aqui a pessoa TEM visibilidade e está afirmando uma ausência.
+  // Escrito por extenso para quem lê não confundir com "não sei".
+  if (r.naoExiste) return 'NÃO EXISTE atualmente na empresa'
 
   if (r.valorOpcoes !== null && r.valorOpcoes.length > 0) {
     return r.valorOpcoes.map((v) => rotuloDaOpcao(r.pergunta, v)).join(', ')
@@ -133,6 +138,8 @@ export function montarTextoParaIa(
     '',
     'Observação metodológica: "não sei" é resposta válida e significa falta de',
     'visibilidade sobre o tema — nunca deve ser lido como nota baixa ou como zero.',
+    '"NÃO EXISTE atualmente" é o oposto: a pessoa sabe que o processo não existe.',
+    'É um achado, não uma lacuna de dado.',
     'Itens marcados como invertidos não aparecem aqui espelhados: o valor é o que',
     'a pessoa marcou na tela.',
     '',

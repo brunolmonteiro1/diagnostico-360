@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
         ? { data: [], error: null }
         : await comoConsultor
             .from('respostas')
-            .select('respondente_id, pergunta_id, nao_sei, valor_num')
+            .select('respondente_id, pergunta_id, nao_sei, nao_existe, valor_num')
             .in('respondente_id', idsRespondentes)
 
     if (erroRespostas) throw erroRespostas
@@ -132,6 +132,7 @@ Deno.serve(async (req) => {
         peso: pergunta.peso,
         invertida: pergunta.invertida,
         naoSei: Boolean(r.nao_sei),
+        naoExiste: Boolean(r.nao_existe),
         valor: r.valor_num === null ? null : Number(r.valor_num),
       }
 
