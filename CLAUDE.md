@@ -26,6 +26,18 @@ Se em algum momento uma implementação sua contrariar este princípio, pare e m
 - react-router-dom · react-hook-form + zod · recharts · date-fns
 - Vitest + Testing Library (unit/integração) · Playwright (e2e do caminho crítico)
 
+## Infraestrutura / VPS (deploy e administração)
+
+Este projeto já está em produção na VPS Hostinger (`187.77.63.219`, diretório `/opt/diagnostico-360`), junto com outros projetos do mesmo dono (Casa da Rocha, Vosz, mission-control) na mesma máquina.
+
+**Antes de tocar na VPS, leia `brunolmonteiro1/infra-vps/CLAUDE.md`** (repositório separado — peça para anexar à sessão se ainda não estiver). Resumo do que você precisa saber sem nem abrir o repo:
+
+- Sessões de Claude Code na nuvem **não conseguem abrir SSH direto** (o proxy de rede da sessão só permite HTTPS, não TCP bruto na porta 22). Não tente `ssh`/`scp` direto daqui — vai falhar.
+- Toda administração da VPS passa pelo workflow `admin.yml` do repositório `brunolmonteiro1/infra-vps` (GitHub Actions `workflow_dispatch`), que roda num runner sem essa restrição e conecta via SSH como usuário `claude` (não root).
+- **Nunca peça ao usuário senha de root ou chave privada SSH no chat.** Já existe uma chave dedicada guardada como secret do GitHub Actions (`HOSTINGER_SSH_PRIVATE_KEY` no repo `infra-vps`) — não gere uma nova nem peça para reenviar.
+- Layout real da VPS: cada projeto fica em `/opt/<nome>` (não `/opt/apps/<nome>`). O usuário `claude` já está nos grupos `sudo` e `docker`, mas ainda não tem escrita nos diretórios dos projetos (donos de `root:root`) nem sudo sem senha — isso está pendente de um ajuste único, feito manualmente pelo usuário via console web da Hostinger.
+- Para rodar algo na VPS: descreva a ação, anexe o repo `infra-vps` à sessão e dispare `admin.yml` (`project`, `action`, ou `raw_command` só para diagnóstico read-only).
+
 ## Arquitetura de acesso
 
 Dois tipos de usuário, com caminhos completamente separados:
